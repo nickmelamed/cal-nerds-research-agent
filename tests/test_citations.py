@@ -103,3 +103,21 @@ def test_old_style_id_inside_a_url_is_matched_whole():
     report = check_citations("https://arxiv.org/abs/cond-mat/9812291", RESULTS)
     assert report.verified == ["cond-mat/9812291"]
     assert report.unverified == []
+
+
+def test_quoted_fragment_of_a_retrieved_title_verifies_that_paper():
+    report = check_citations('The "is all you need" idea... see "Attention Is All You".', RESULTS)
+    assert report.verified == ["1706.03762"]
+    assert report.unverified == []
+    assert report.summary == "1 of 1 cited papers were retrieved by the agent in this run."
+
+
+def test_quoted_fragment_and_id_count_once():
+    report = check_citations('"Attention Is All You" (1706.03762)', RESULTS)
+    assert report.verified == ["1706.03762"]
+    assert report.summary.startswith("1 of 1")
+
+
+def test_quoted_fragment_of_no_retrieved_title_is_unverified():
+    report = check_citations('See "Attention Is Not Enough Here".', RESULTS)
+    assert report.unverified == ["Attention Is Not Enough Here"]

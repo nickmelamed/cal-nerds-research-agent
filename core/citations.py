@@ -44,8 +44,9 @@ def check_citations(answer: str, tool_results: list[dict]) -> CitationReport:
     """Count a citation as verified only if a tool returned it in this run.
 
     Match papers by arXiv id, or by title when the answer gives no id. A
-    quoted phrase of four or more words that matches no retrieved title is
-    unverified.
+    quoted phrase of four or more words counts as a reference to any
+    retrieved paper whose title contains it, and is unverified when no
+    retrieved title does.
     """
     papers, titles = _retrieved(tool_results)
     report = CitationReport()
@@ -66,9 +67,16 @@ def check_citations(answer: str, tool_results: list[dict]) -> CitationReport:
 
     for quoted in QUOTED.findall(answer):
         title = _norm_title(quoted)
-        if len(title.split()) < MIN_QUOTED_WORDS or title in titles:
+        if len(title.split()) < MIN_QUOTED_WORDS:
             continue
-        if not any(title in known for known in titles):
+        needle = f" {title} "
+        matched = [pid for pid, known in papers.items() if needle in f" {known} "]
+        if matched:
+            for pid in matched:
+                if pid not in seen_ids:
+                    seen_ids.add(pid)
+                    report.verified.append(pid)
+        elif not any(needle in f" {known} " for known in titles):
             report.unverified.append(quoted.strip())
 
     total = len(report.verified) + len(report.unverified)
