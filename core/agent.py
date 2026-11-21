@@ -100,8 +100,15 @@ def run_agent(
             continue
 
         usage = getattr(response, "usage", None)
-        tokens = getattr(usage, "total_tokens", 0) or 0
-        tracer.model_call(step, tokens, time.monotonic() - start)
+        tracer.model_call(
+            step,
+            _count(usage, "total_tokens"),
+            time.monotonic() - start,
+            prompt=_count(usage, "prompt_tokens"),
+            completion=_count(usage, "completion_tokens"),
+            cached=_count(getattr(usage, "prompt_tokens_details", None), "cached_tokens"),
+            reasoning=_count(getattr(usage, "completion_tokens_details", None), "reasoning_tokens"),
+        )
 
         message = response.choices[0].message
         if not message.tool_calls:
@@ -140,6 +147,11 @@ def run_agent(
     text = f"Stopped after {max_steps} steps without a final answer."
     tracer.answer(text)
     return AgentResult(text, max_steps, tracer)
+
+
+def _count(obj, name: str) -> int:
+    value = getattr(obj, name, 0)
+    return value if isinstance(value, int) else 0
 
 
 def _parsed_args(call) -> dict:

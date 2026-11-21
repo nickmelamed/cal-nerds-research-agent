@@ -146,3 +146,25 @@ def test_long_tool_result_is_marked_truncated(monkeypatch):
     assert content.endswith(agent.TRUNCATION_MARK)
     assert len(content) == agent.RESULT_CHARS + len(agent.TRUNCATION_MARK)
     assert result.tracer.tool_results[0]["result"] == "x" * 5000
+
+
+def test_usage_details_are_recorded():
+    usage = NS(
+        total_tokens=100,
+        prompt_tokens=80,
+        completion_tokens=20,
+        prompt_tokens_details=NS(cached_tokens=60),
+        completion_tokens_details=NS(reasoning_tokens=7),
+    )
+    response = NS(choices=[NS(message=NS(content="hi", tool_calls=None))], usage=usage)
+    _, result = run([response])
+    summary = result.tracer.summary()
+    assert (summary["prompt_tokens"], summary["completion_tokens"]) == (80, 20)
+    assert (summary["cached_tokens"], summary["reasoning_tokens"]) == (60, 7)
+
+
+def test_missing_usage_details_count_as_zero():
+    _, result = run([reply("hi")])
+    summary = result.tracer.summary()
+    assert summary["tokens"] == 100
+    assert summary["cached_tokens"] == 0 and summary["reasoning_tokens"] == 0

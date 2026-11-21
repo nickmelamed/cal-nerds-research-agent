@@ -20,6 +20,10 @@ def test_summary_totals_tokens_and_latency():
         "model_calls": 2,
         "tool_calls": 0,
         "tokens": 350,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cached_tokens": 0,
+        "reasoning_tokens": 0,
         "seconds": 1.75,
     }
 
@@ -30,3 +34,14 @@ def test_quiet_tracer_prints_nothing(capsys):
     tracer.answer("hi")
     assert capsys.readouterr().out == ""
     assert tracer.final_answer == "hi"
+
+
+def test_summary_splits_token_kinds():
+    tracer = Tracer(verbose=False)
+    tracer.model_call(1, 100, 0.5, prompt=80, completion=20, cached=50, reasoning=5)
+    tracer.model_call(2, 200, 0.5, prompt=150, completion=50, cached=100, reasoning=10)
+    summary = tracer.summary()
+    assert summary["prompt_tokens"] == 230
+    assert summary["completion_tokens"] == 70
+    assert summary["cached_tokens"] == 150
+    assert summary["reasoning_tokens"] == 15
