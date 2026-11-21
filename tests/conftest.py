@@ -20,8 +20,12 @@ class FakeClock:
 
 
 @pytest.fixture(autouse=True)
-def clock(monkeypatch):
+def clock(request, monkeypatch):
     fake = FakeClock()
+    if request.node.get_closest_marker("slow"):
+        # Live tests must wait for real so arXiv sees the 3 second spacing.
+        tools.reset_cache()
+        return fake
     monkeypatch.setattr(tools, "_clock", fake.monotonic)
     monkeypatch.setattr(tools, "_sleep", fake.sleep)
     monkeypatch.setattr(tools, "_last_arxiv_call", None)
