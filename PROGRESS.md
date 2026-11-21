@@ -6,7 +6,11 @@ phase. CLAUDE.md stays stable and does not track status.
 ## Now
 
 - [ ] Phase 3. Model bake-off (gpt-oss-120b, gpt-oss-20b, qwen3.8-27b),
-      including tokens per run and whether cached tokens count toward TPM
+      including tokens per run and whether cached tokens count toward TPM.
+      The scripts are built (`bakeoff/run.py`, `bakeoff/summarize.py`). Left:
+      Nick runs `python -m bakeoff.run --pilot`, then the full run, then
+      `python -m bakeoff.summarize results/bakeoff-<date>.csv`. Also check
+      current prices and the cached-token question below.
 
 ## Next
 
@@ -23,6 +27,12 @@ phase. CLAUDE.md stays stable and does not track status.
       `core/client.py`)
 - [ ] 429 retry message and `remaining_tokens()` against the real Groq SDK
       headers
+- [ ] Usage fields from the real Groq SDK: `prompt_tokens`,
+      `completion_tokens`, `prompt_tokens_details.cached_tokens`, and
+      `completion_tokens_details.reasoning_tokens`. The tracer reads them with
+      defaults of 0, so a missing field shows as 0 cached tokens, not an error
+- [ ] Cached tokens and TPM: send the same large prompt twice and compare
+      `x-ratelimit-remaining-tokens` after each call
 - [ ] `run_agent` against the real Groq SDK. Check the `tool_use_failed`
       error text and that `usage.total_tokens` is set
 - [ ] Form cells render collapsed
