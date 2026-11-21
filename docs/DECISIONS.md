@@ -81,3 +81,19 @@ parsing text.
 
 Consequences. A new query or term needs a new recording through the
 refresh-fixtures skill, since a missing key behaves like a failed request.
+
+## D-006: One full agent loop in core, starter keeps a stripped copy (2026-11-21)
+
+Context. The demo and guided notebooks need a step cap and token logging.
+The full-code starter must lack error handling, a step cap, and logging,
+because those are student tasks.
+
+Decision. `core/agent.py` holds one full loop with `max_steps` and a
+`Tracer`. Phase 5 builds the starter from a stripped version of the loop in
+`notebooks_src/` instead of a second copy in `core/`.
+
+Why. A fix to the loop reaches the demo and guided notebooks through the
+build. The starter keeps its own bare loop.
+
+Consequences. Phase 5 must keep the stripped loop in step with the core
+loop by hand. `build.py --check` will not catch drift.

@@ -5,7 +5,8 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 2. Agent loop, tracer, citation check
+- [ ] Phase 2. Agent loop, tracer, citation check (code done,
+      review and PR left)
 
 ## Next
 
@@ -24,6 +25,8 @@ phase. CLAUDE.md stays stable and does not track status.
       `core/client.py`)
 - [ ] 429 retry message and `remaining_tokens()` against the real Groq SDK
       headers
+- [ ] `run_agent` against the real Groq SDK. Check the `tool_use_failed`
+      error text and that `usage.total_tokens` is set
 - [ ] Form cells render collapsed
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
