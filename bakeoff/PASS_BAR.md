@@ -1,7 +1,5 @@
 # Bake-off definitions and pass bar
 
-Written before any run so the result is not argued afterward.
-
 ## Definitions
 
 A run is one call to `run_agent` on one question with one model.

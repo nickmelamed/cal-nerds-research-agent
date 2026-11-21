@@ -1,4 +1,4 @@
-"""Run each model on each question, one at a time, and append raw rows to a CSV."""
+"""Run each model on each question and append rows to a CSV."""
 
 import argparse
 import csv
@@ -41,7 +41,7 @@ FIELDS = [
     "error",
 ]
 
-# Start of each message _run_tool in core/agent.py returns for a bad call.
+# Prefixes of the messages _run_tool returns for a bad call.
 FAILURE_PREFIXES = (
     "There is no tool called",
     "The tool arguments were not valid JSON",
@@ -58,7 +58,7 @@ def _is_failed_call(entry: dict) -> bool:
 
 
 def run_one(client, model: str, question_key: str, run: int) -> dict:
-    """Run the agent once and return one CSV row. Errors go in the row."""
+    """Run the agent once and return a CSV row. Exceptions are recorded in it."""
     question = BY_KEY[question_key]
     tracer = Tracer(verbose=False)
     row = dict.fromkeys(FIELDS, "")
@@ -69,7 +69,6 @@ def run_one(client, model: str, question_key: str, run: int) -> dict:
     except Exception as error:
         row.update(error=f"{type(error).__name__}: {error}"[:300], ended_early=True)
         summary = tracer.summary()
-        row["seconds"] = round(time.monotonic() - start, 2)
     else:
         summary = tracer.summary()
         report = check_citations(result.answer, tracer.tool_results)
@@ -79,10 +78,10 @@ def run_one(client, model: str, question_key: str, run: int) -> dict:
             unverified=len(report.unverified),
             citation_pass=bool(report.verified) and not report.unverified,
             ended_early=result.answer.startswith(ENDED_EARLY_PREFIXES),
-            seconds=summary["seconds"],
         )
     names = [entry["name"] for entry in tracer.tool_results]
     row.update(
+        seconds=round(time.monotonic() - start, 2),
         tools_used=" ".join(sorted(set(names))),
         tool_calls=len(names),
         tool_failures=sum(_is_failed_call(e) for e in tracer.tool_results),
@@ -101,7 +100,6 @@ def default_out_path() -> Path:
 
 
 def append_row(path: Path, row: dict) -> None:
-    """Append one row, writing the header first if the file is new."""
     path.parent.mkdir(parents=True, exist_ok=True)
     is_new = not path.exists()
     with path.open("a", newline="") as handle:
@@ -112,7 +110,7 @@ def append_row(path: Path, row: dict) -> None:
 
 
 def run_all(client, models, questions, runs, out: Path) -> int:
-    """Run every model on every question, appending each row as it finishes."""
+    """Append each row as it finishes so a crash keeps earlier runs."""
     count = 0
     for model in models:
         for key in questions:

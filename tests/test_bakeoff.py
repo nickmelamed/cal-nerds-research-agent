@@ -176,3 +176,20 @@ def test_load_roundtrip(tmp_path):
     for row in make_rows("m", 2, cites=2, tokens=100):
         run.append_row(out, row)
     assert len(summarize.load(out)) == 2
+
+
+def test_run_without_tool_calls_counts_as_tool_failure():
+    rows = make_rows("m", 1, cites=1, tokens=100, tool_calls=0)
+    rows += make_rows("m", 1, cites=1, tokens=100, tool_calls=1)
+    assert summarize.stats(rows)["tool_success"] == 0.5
+
+
+def test_failed_tool_message_is_counted():
+    assert run._is_failed_call({"result": "search_arxiv failed (KeyError). Try again."})
+    assert not run._is_failed_call({"result": "No papers found."})
+
+
+def test_seconds_is_wall_clock_on_success_and_error(fake_tools):
+    ok = run.run_one(FakeClient([usage_reply("hi")]), "m", "demo", 1)
+    bad = run.run_one(FakeClient([RuntimeError("boom")]), "m", "demo", 2)
+    assert ok["seconds"] != "" and bad["seconds"] != ""

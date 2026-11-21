@@ -14,11 +14,10 @@ SYSTEM_PROMPT = (
 class Question:
     key: str
     text: str
-    # True when a good answer needs at least two different tools.
     needs_multiple_tools: bool
 
 
-# The guided questions are placeholders until the exercises are written.
+# guided_* are placeholders until phase 6.
 QUESTIONS = [
     Question(
         "demo",

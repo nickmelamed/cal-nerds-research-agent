@@ -28,7 +28,7 @@ class Tracer:
         cached: int = 0,
         reasoning: int = 0,
     ) -> None:
-        """Record the tokens and latency of one model call.
+        """Record the token counts and latency of one model call.
 
         ``cached`` is part of ``prompt`` and ``reasoning`` is part of
         ``completion``. Both stay 0 when the API does not report them.

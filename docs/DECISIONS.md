@@ -100,8 +100,8 @@ loop by hand. `build.py --check` will not catch drift.
 
 ## D-007: Bake-off design and the gpt-oss-20b pass bar (2026-11-21)
 
-Context. The bake-off has to decide the second student pool, and a full
-live run of 20 runs per cell would put real load on arXiv.
+Context. The bake-off has to decide the second student pool, and the
+spec's roughly 20 runs per cell would put real load on arXiv.
 
 Decision. The runner uses live arXiv and Wikipedia, starting with a pilot
 of 3 runs per model and question, then about 10 per cell. The pass bar for
@@ -110,8 +110,8 @@ success of at least 95%, citation pass within 10 points of gpt-oss-120b,
 mean tokens at most 8,000, and at most 1 in 10 runs ending early or in error.
 
 Why. Fixtures would fail any query the model invents, which skews tool
-success. Fewer live runs keep to the arXiv spacing without a multi-hour job.
-Fixing the bar first keeps the result from being argued afterward.
+success. Fewer live runs keep the 3 second arXiv spacing from turning the run
+into an all-day job. The bar is fixed before any run.
 
 Consequences. Confidence intervals are wide at 10 runs per cell. If a model
 lands near the bar, run more before deciding. The guided questions in

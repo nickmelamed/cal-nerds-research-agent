@@ -36,8 +36,10 @@ def _p90(values: list[float]) -> float:
 
 def stats(rows: list[dict]) -> dict:
     """Return the measures from docs/SPEC.md for one group of runs."""
-    calls = sum(_num(r["tool_calls"]) for r in rows)
-    failed = sum(_num(r["tool_failures"]) for r in rows)
+    # A run with no tool call counts as one failed call, as in PASS_BAR.md.
+    silent = sum(_num(r["tool_calls"]) == 0 for r in rows)
+    calls = sum(_num(r["tool_calls"]) for r in rows) + silent
+    failed = sum(_num(r["tool_failures"]) for r in rows) + silent
     multi = [r for r in rows if BY_KEY[r["question"]].needs_multiple_tools]
     tokens = [_num(r["total_tokens"]) for r in rows]
     return {
@@ -88,7 +90,7 @@ def _line(label: str, s: dict) -> str:
 
 
 def report(rows: list[dict]) -> str:
-    """Return the text summary: per model, per model and question, and the 20b check."""
+    """Return the per-model and per-question tables plus the 20b check."""
     header = (
         f"{'':<34}{'runs':>5}{'tools':>8}{'multi':>8}{'cites':>8}"
         f"{'tok avg':>9}{'tok p90':>9}{'sec':>8}{'errors':>8}{'cached':>9}"
