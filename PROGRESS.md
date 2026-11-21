@@ -5,13 +5,11 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 2. Agent loop, tracer, citation check (code done,
-      review and PR left)
+- [ ] Phase 3. Model bake-off (gpt-oss-120b, gpt-oss-20b, qwen3.8-27b),
+      including tokens per run and whether cached tokens count toward TPM
 
 ## Next
 
-- [ ] Phase 3. Model bake-off (gpt-oss-120b, gpt-oss-20b, qwen3.8-27b),
-      including tokens per run and whether cached tokens count toward TPM
 - [ ] Phase 4. `build.py` and the demo notebook with OFFLINE mode
 - [ ] Phase 5. Full-code starter
 - [ ] Phase 6. Guided notebook and exercise 3 wording tests
@@ -46,6 +44,8 @@ phase. CLAUDE.md stays stable and does not track status.
       with fixtures, fast tests, and live tests (PR #1)
 - [x] Phase 1. Client wrapper with 429 handling and rate limit header reader
       (PR #1)
+- [x] Phase 2. Tool schemas, agent loop, tracer, and citation check, with
+      mocked-Groq tests (PR #3)
 
 ## Phase 2 handoff notes
 
