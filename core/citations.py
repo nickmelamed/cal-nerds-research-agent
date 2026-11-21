@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from core.tools import _normalize_id
 
 NEW_ID = r"(?<![\d.])\d{4}\.\d{4,5}(?:v\d+)?(?![\d])"
-OLD_ID = r"(?<![\w/])[a-z]+(?:-[a-z]+)*(?:\.[A-Z]{2})?/\d{7}(?:v\d+)?"
+OLD_ID = r"(?<![\w-])[a-z]+(?:-[a-z]+)*(?:\.[A-Z]{2})?/\d{7}(?:v\d+)?"
 ID_PATTERN = re.compile(f"{NEW_ID}|{OLD_ID}")
 QUOTED = re.compile(r"[\"“]([^\"”]+)[\"”]")
 MIN_QUOTED_WORDS = 4
@@ -24,7 +24,7 @@ def _norm_title(text: str) -> str:
 
 
 def _retrieved(tool_results: list[dict]) -> tuple[dict[str, str], set[str]]:
-    """Return arXiv papers as id to normalized title, and all retrieved titles."""
+    # Wikipedia titles go in the title set only, so a quoted one is not flagged.
     papers: dict[str, str] = {}
     titles: set[str] = set()
     for entry in tool_results:
@@ -43,10 +43,9 @@ def _retrieved(tool_results: list[dict]) -> tuple[dict[str, str], set[str]]:
 def check_citations(answer: str, tool_results: list[dict]) -> CitationReport:
     """Count a citation as verified only if a tool returned it in this run.
 
-    ``tool_results`` is ``Tracer.tool_results`` from the run being checked.
-    Papers are matched by arXiv id, or by title when the answer gives the
-    title without an id. A quoted phrase of four or more words that matches
-    no retrieved title is reported as unverified.
+    Match papers by arXiv id, or by title when the answer gives no id. A
+    quoted phrase of four or more words that matches no retrieved title is
+    unverified.
     """
     papers, titles = _retrieved(tool_results)
     report = CitationReport()

@@ -120,3 +120,19 @@ def test_cache_is_cleared_at_the_start(monkeypatch):
     tools._papers["x"] = {"title": "t", "abstract": "a"}
     run([reply("done")])
     assert tools._papers == {}
+
+
+def test_tool_that_raises_goes_back_to_model(monkeypatch):
+    def broken(query):
+        raise RuntimeError("network down")
+
+    monkeypatch.setitem(agent.TOOL_FUNCTIONS, "search_arxiv", broken)
+    calls = [tool_call("search_arxiv", {"query": "x"})]
+    fake, result = run([reply(calls=calls), reply("done")])
+    assert "failed (RuntimeError)" in fake.requests[1][-1]["content"]
+    assert result.answer == "done"
+
+
+def test_tool_use_failed_retry_is_noted_in_the_trace(capsys):
+    run([Exception("tool_use_failed"), reply("ok")])
+    assert "malformed tool call" in capsys.readouterr().out

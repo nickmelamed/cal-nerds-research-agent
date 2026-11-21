@@ -1,4 +1,4 @@
-"""Prints each agent step and collects tokens, latency, and raw tool results."""
+"""Print each agent step and collect tokens, latency, and raw tool results."""
 
 import json
 
@@ -30,6 +30,10 @@ class Tracer:
             shown = shown[:DISPLAY_CHARS] + "..."
         self._print(f"Step {step}: {name}({json.dumps(args)})")
         self._print(f"  -> {shown}")
+
+    def note(self, text: str) -> None:
+        """Print a line about something that went wrong mid-run."""
+        self._print(text)
 
     def answer(self, text: str) -> None:
         """Print and keep the final answer."""

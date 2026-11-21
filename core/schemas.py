@@ -1,5 +1,4 @@
-"""Tool schemas the model sees. The descriptions are plain strings so the
-guided track can change the wording without touching the structure."""
+"""Tool schemas sent to the model, with editable descriptions."""
 
 SEARCH_ARXIV_DESCRIPTION = (
     "Search arXiv for research papers on a topic. Returns the id, title, "

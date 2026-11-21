@@ -1,5 +1,6 @@
 """The agent loop: ask the model, run the tools it picks, repeat."""
 
+import inspect
 import json
 import time
 from dataclasses import dataclass
@@ -37,9 +38,13 @@ def _run_tool(name: str, raw_args: str):
     except ValueError:
         return "The tool arguments were not valid JSON. Try the call again."
     try:
-        return func(**args)
+        inspect.signature(func).bind(**args)
     except TypeError:
         return f"The arguments did not match {name}. Check the tool description."
+    try:
+        return func(**args)
+    except Exception as error:
+        return f"{name} failed ({type(error).__name__}). Try different input or another tool."
 
 
 def _to_message_text(result) -> str:
@@ -81,6 +86,7 @@ def run_agent(
                 tracer.answer(text)
                 return AgentResult(text, step, tracer)
             retried_tool_error = True
+            tracer.note(f"Step {step}: the model made a malformed tool call, retrying")
             messages.append(
                 {
                     "role": "user",
@@ -119,7 +125,7 @@ def run_agent(
         )
         for call in message.tool_calls:
             result = _run_tool(call.function.name, call.function.arguments)
-            tracer.tool_call(step, call.function.name, _loaded(call), result)
+            tracer.tool_call(step, call.function.name, _parsed_args(call), result)
             messages.append(
                 {
                     "role": "tool",
@@ -133,7 +139,7 @@ def run_agent(
     return AgentResult(text, max_steps, tracer)
 
 
-def _loaded(call) -> dict:
+def _parsed_args(call) -> dict:
     try:
         args = json.loads(call.function.arguments or "{}")
     except ValueError:

@@ -97,3 +97,9 @@ def test_string_results_are_ignored():
     results = [{"name": "search_arxiv", "result": "No papers found, try broader terms."}]
     report = check_citations("See 1706.03762.", results)
     assert report.unverified == ["1706.03762"]
+
+
+def test_old_style_id_inside_a_url_is_matched_whole():
+    report = check_citations("https://arxiv.org/abs/cond-mat/9812291", RESULTS)
+    assert report.verified == ["cond-mat/9812291"]
+    assert report.unverified == []
