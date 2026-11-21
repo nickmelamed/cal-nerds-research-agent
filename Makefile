@@ -19,8 +19,9 @@ test-live:
 bakeoff:
 	$(PY) -m bakeoff.run
 
-# pytest and build.py --check join this list when phase 1 and phase 4 add them.
+# build.py --check joins this list when phase 4 adds it.
 agent-check:
+	$(PY) -m pytest -q -m "not slow"
 	ruff check .
 	ruff format --check .
 	python3 scripts/agent/check_style.py .
