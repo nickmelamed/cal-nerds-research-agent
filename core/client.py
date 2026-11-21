@@ -44,7 +44,7 @@ def _retry_wait(error: Exception) -> float:
 
 
 def chat(client, **kwargs):
-    """Call ``client.chat.completions.create``, waiting and retrying on a 429.
+    """Call the chat endpoint, retrying on 429.
 
     Response headers are kept for ``remaining_tokens``. After the retries run
     out the last 429 error is raised.

@@ -23,8 +23,7 @@ TIMEOUT_S = 20
 
 ATOM = {"a": "http://www.w3.org/2005/Atom"}
 
-# When True, requests are answered from OFFLINE_DATA instead of the network.
-# Keys are built by _offline_key and values are the raw response bodies.
+# Raw response bodies served in OFFLINE mode, keyed by _offline_key.
 OFFLINE = False
 OFFLINE_DATA: dict[str, str] = {}
 
@@ -57,7 +56,7 @@ def _wait_for_arxiv() -> None:
 
 
 def _arxiv_get(params: dict) -> str | None:
-    """Return the Atom response text, or None if arXiv keeps failing."""
+    """Return the Atom text, or None after retries."""
     if OFFLINE:
         return OFFLINE_DATA.get(_offline_key(ARXIV_URL, params))
     for attempt in range(MAX_RETRIES):
@@ -105,7 +104,6 @@ def _truncate_sentences(text: str, limit: int = WIKI_SENTENCES) -> str:
 
 
 def _normalize_id(paper_id: str) -> str:
-    """Strip URL prefixes, the arXiv: prefix, and version suffixes."""
     pid = paper_id.strip()
     pid = re.sub(r"^(https?://)?(www\.)?arxiv\.org/(abs|pdf)/", "", pid)
     pid = re.sub(r"^arxiv:", "", pid, flags=re.IGNORECASE)
@@ -145,9 +143,8 @@ def _parse_entries(xml_text: str) -> list[dict]:
 def search_arxiv(query: str, max_results: int = MAX_RESULTS) -> list[dict] | str:
     """Search arXiv and return id, title, authors, date, and link per paper.
 
-    Returns a plain message instead of a list when nothing is found or arXiv
-    cannot be reached. Results are cached for the run and their abstracts are
-    kept so ``get_abstract`` does not need a second request.
+    Returns a message string when nothing is found or arXiv is unreachable.
+    Abstracts are cached for ``get_abstract``.
     """
     query = (query or "").strip()
     if not query:
@@ -234,11 +231,7 @@ def _loads(text: str) -> dict | None:
 
 
 def lookup_wikipedia(term: str) -> dict | str:
-    """Return a short Wikipedia summary for a term.
-
-    Tries the exact page title first, then falls back to a Wikipedia search
-    and uses the top hit.
-    """
+    """Return a short Wikipedia summary, searching if the exact title misses."""
     term = (term or "").strip()
     if not term:
         return "The term was empty. Give a word or short phrase to look up."

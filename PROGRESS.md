@@ -5,9 +5,9 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 1. Core tools (`search_arxiv`, `get_abstract`, `lookup_wikipedia`)
+- [x] Phase 1. Core tools (`search_arxiv`, `get_abstract`, `lookup_wikipedia`)
       with fixtures, fast tests, and live tests
-- [ ] Phase 1. Client wrapper with 429 handling and rate limit header reader
+- [x] Phase 1. Client wrapper with 429 handling and rate limit header reader
 
 ## Next
 
