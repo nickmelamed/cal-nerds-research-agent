@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 
 from core import tools
@@ -25,3 +28,10 @@ def clock(monkeypatch):
     monkeypatch.setattr(tools, "OFFLINE", False)
     tools.reset_cache()
     return fake
+
+
+@pytest.fixture
+def offline(monkeypatch):
+    path = Path(__file__).parent.parent / "fixtures" / "responses.json"
+    monkeypatch.setattr(tools, "OFFLINE", True)
+    monkeypatch.setattr(tools, "OFFLINE_DATA", json.loads(path.read_text()))
