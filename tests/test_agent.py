@@ -136,3 +136,13 @@ def test_tool_that_raises_goes_back_to_model(monkeypatch):
 def test_tool_use_failed_retry_is_noted_in_the_trace(capsys):
     run([Exception("tool_use_failed"), reply("ok")])
     assert "malformed tool call" in capsys.readouterr().out
+
+
+def test_long_tool_result_is_marked_truncated(monkeypatch):
+    monkeypatch.setitem(agent.TOOL_FUNCTIONS, "lookup_wikipedia", lambda term: "x" * 5000)
+    calls = [tool_call("lookup_wikipedia", {"term": "a"})]
+    fake, result = run([reply(calls=calls), reply("done")])
+    content = fake.requests[1][-1]["content"]
+    assert content.endswith(agent.TRUNCATION_MARK)
+    assert len(content) == agent.RESULT_CHARS + len(agent.TRUNCATION_MARK)
+    assert result.tracer.tool_results[0]["result"] == "x" * 5000

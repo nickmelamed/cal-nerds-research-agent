@@ -12,6 +12,7 @@ from core.tracer import Tracer
 MODEL = "openai/gpt-oss-120b"
 MAX_STEPS = 8
 RESULT_CHARS = 2000
+TRUNCATION_MARK = " [truncated]"
 
 TOOL_FUNCTIONS = {
     "search_arxiv": tools.search_arxiv,
@@ -49,7 +50,9 @@ def _run_tool(name: str, raw_args: str):
 
 def _to_message_text(result) -> str:
     text = result if isinstance(result, str) else json.dumps(result)
-    return text[:RESULT_CHARS]
+    if len(text) > RESULT_CHARS:
+        return text[:RESULT_CHARS] + TRUNCATION_MARK
+    return text
 
 
 def run_agent(
