@@ -103,6 +103,9 @@ loop by hand. `build.py --check` will not catch drift.
 
 ## D-007: Bake-off design and the gpt-oss-20b pass bar (2026-11-21)
 
+Partly superseded by D-008. The live-run plan still holds. The 20b pass bar
+was replaced by the provider selection rule in `bakeoff/PASS_BAR.md`.
+
 Context. The bake-off has to decide the second student pool, and the
 spec's roughly 20 runs per cell would put real load on arXiv.
 

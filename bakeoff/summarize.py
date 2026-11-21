@@ -1,4 +1,4 @@
-"""Compute the bake-off tables and the gpt-oss-20b check from a results CSV."""
+"""Compute the bake-off tables and the provider selection from a results CSV."""
 
 import csv
 import statistics
@@ -8,8 +8,7 @@ from pathlib import Path
 
 from bakeoff.questions import BY_KEY
 
-BASE_MODEL = "openai/gpt-oss-120b"
-CANDIDATE = "openai/gpt-oss-20b"
+BASELINE = "groq-free"
 MIN_TOOL_SUCCESS = 0.95
 MAX_CITATION_GAP = 0.10
 MAX_MEAN_TOKENS = 8000
@@ -58,27 +57,40 @@ def stats(rows: list[dict]) -> dict:
     }
 
 
-def by_model(rows: list[dict]) -> dict[str, dict]:
+def by_provider(rows: list[dict]) -> dict[str, dict]:
     groups = defaultdict(list)
     for row in rows:
-        groups[row["model"]].append(row)
+        groups[row["provider"]].append(row)
     return {model: stats(group) for model, group in groups.items()}
 
 
-def check_candidate(per_model: dict[str, dict]) -> list[tuple[str, bool]]:
-    """Return each pass-bar condition for gpt-oss-20b and whether it held."""
-    base, cand = per_model.get(BASE_MODEL), per_model.get(CANDIDATE)
-    if not base or not cand:
-        return []
-    return [
-        ("tool-call success >= 95%", cand["tool_success"] >= MIN_TOOL_SUCCESS),
-        (
-            "citation pass within 10 points of 120b",
-            base["citation_pass"] - cand["citation_pass"] <= MAX_CITATION_GAP,
-        ),
-        ("mean tokens <= 8000", cand["tokens_mean"] <= MAX_MEAN_TOKENS),
-        ("error runs <= 10%", cand["error_rate"] <= MAX_ERROR_RATE),
+def eligible(per_provider: dict[str, dict]) -> dict[str, list[tuple[str, bool]]]:
+    """Return each provider's selection conditions and whether each held."""
+    best = max((s["citation_pass"] for n, s in per_provider.items() if n != BASELINE), default=0.0)
+    return {
+        name: [
+            ("tool-call success >= 95%", s["tool_success"] >= MIN_TOOL_SUCCESS),
+            ("mean tokens <= 8000", s["tokens_mean"] <= MAX_MEAN_TOKENS),
+            ("error runs <= 10%", s["error_rate"] <= MAX_ERROR_RATE),
+            (
+                "citation pass within 10 points of best OpenRouter provider",
+                best - s["citation_pass"] <= MAX_CITATION_GAP,
+            ),
+        ]
+        for name, s in per_provider.items()
+    }
+
+
+def pick(per_provider: dict[str, dict]) -> list[str]:
+    """Return eligible OpenRouter providers, best first: the pin, then the fallback."""
+    checks = eligible(per_provider)
+    names = [
+        name for name, held in checks.items() if name != BASELINE and all(ok for _, ok in held)
     ]
+    return sorted(
+        names,
+        key=lambda n: (-per_provider[n]["citation_pass"], per_provider[n]["seconds_mean"]),
+    )
 
 
 def _line(label: str, s: dict) -> str:
@@ -90,30 +102,35 @@ def _line(label: str, s: dict) -> str:
 
 
 def report(rows: list[dict]) -> str:
-    """Return the per-model and per-question tables plus the 20b check."""
+    """Return the per-provider and per-question tables plus the selection."""
     header = (
         f"{'':<34}{'runs':>5}{'tools':>8}{'multi':>8}{'cites':>8}"
         f"{'tok avg':>9}{'tok p90':>9}{'sec':>8}{'errors':>8}{'cached':>9}"
     )
     lines = [header]
-    per_model = by_model(rows)
-    for model, s in per_model.items():
-        lines.append(_line(model, s))
+    per_provider = by_provider(rows)
+    for provider, s in per_provider.items():
+        lines.append(_line(provider, s))
     lines.append("")
     cells = defaultdict(list)
     for row in rows:
-        cells[(row["model"], row["question"])].append(row)
-    for (model, question), group in cells.items():
-        lines.append(_line(f"{model.split('/')[-1]} / {question}", stats(group)))
-    checks = check_candidate(per_model)
+        cells[(row["provider"], row["question"])].append(row)
+    for (provider, question), group in cells.items():
+        lines.append(_line(f"{provider} / {question}", stats(group)))
     lines.append("")
-    if checks:
-        for name, held in checks:
-            lines.append(f"{'PASS' if held else 'FAIL'}  {CANDIDATE}: {name}")
-        verdict = "meets" if all(held for _, held in checks) else "does not meet"
-        lines.append(f"{CANDIDATE} {verdict} the pass bar in bakeoff/PASS_BAR.md.")
+    for name, held in eligible(per_provider).items():
+        failed = [label for label, ok in held if not ok]
+        lines.append(
+            f"{name}: " + ("eligible" if not failed else "not eligible, " + "; ".join(failed))
+        )
+    ranked = pick(per_provider)
+    if ranked:
+        lines.append(
+            f"Pin {ranked[0]}."
+            + (f" Fallback {ranked[1]}." if len(ranked) > 1 else " No fallback is eligible.")
+        )
     else:
-        lines.append(f"No rows for both {BASE_MODEL} and {CANDIDATE}, so no pass bar check.")
+        lines.append("No OpenRouter provider meets the selection rule in bakeoff/PASS_BAR.md.")
     return "\n".join(lines)
 
 

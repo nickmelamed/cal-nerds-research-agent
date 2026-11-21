@@ -168,3 +168,16 @@ def test_missing_usage_details_count_as_zero():
     summary = result.tracer.summary()
     assert summary["tokens"] == 100
     assert summary["cached_tokens"] == 0 and summary["reasoning_tokens"] == 0
+
+
+def test_extra_body_reaches_the_client():
+    seen = {}
+
+    class Spy(FakeClient):
+        def create(self, **kwargs):
+            seen.update(kwargs)
+            return super().create(**kwargs)
+
+    body = {"provider": {"order": ["X"]}}
+    agent.run_agent(Spy([reply("hi")]), "q", "sys", TOOLS, extra_body=body)
+    assert seen["extra_body"] == body

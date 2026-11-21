@@ -93,18 +93,41 @@ def test_append_row_writes_header_once(tmp_path):
     assert len(rows) == 2 and rows[0]["model"] == "x"
 
 
-def test_run_all_loops_models_questions_and_runs(tmp_path, monkeypatch):
+def test_run_all_loops_providers_questions_and_runs(tmp_path, monkeypatch):
     calls = []
 
-    def fake_run_one(client, model, key, number):
-        calls.append((model, key, number))
+    def fake_run_one(client, provider, key, number):
+        calls.append((client, provider, key, number))
         return dict.fromkeys(run.FIELDS, "")
 
     monkeypatch.setattr(run, "run_one", fake_run_one)
     out = tmp_path / "r.csv"
-    assert run.run_all(None, ["a", "b"], ["demo", "guided_cs"], 2, out) == 8
-    assert calls[0] == ("a", "demo", 1) and calls[-1] == ("b", "guided_cs", 2)
+    clients = {"a": "ca", "b": "cb"}
+    assert run.run_all(clients, ["a", "b"], ["demo", "guided_cs"], 2, out) == 8
+    assert calls[0] == ("ca", "a", "demo", 1) and calls[-1] == ("cb", "b", "guided_cs", 2)
     assert len(list(csv.DictReader(out.open()))) == 8
+
+
+def test_request_options_pin_an_openrouter_provider():
+    assert run.request_options("openrouter:auto") is None
+    assert run.request_options("groq-free") is None
+    assert run.request_options("openrouter:Fireworks") == {
+        "provider": {"order": ["Fireworks"], "allow_fallbacks": False}
+    }
+
+
+def test_run_one_sends_routing_body_and_records_provider(fake_tools):
+    seen = {}
+
+    class Spy(FakeClient):
+        def create(self, **kwargs):
+            seen.update(kwargs)
+            return super().create(**kwargs)
+
+    row = run.run_one(Spy([usage_reply("hi")]), "openrouter:Fireworks", "demo", 1)
+    assert seen["extra_body"]["provider"]["order"] == ["Fireworks"]
+    assert row["provider"] == "openrouter:Fireworks"
+    assert row["model"] == run.MODEL
 
 
 def test_main_rejects_unknown_question():
@@ -114,24 +137,25 @@ def test_main_rejects_unknown_question():
 
 def test_main_cancels_without_confirmation(monkeypatch):
     monkeypatch.setattr("builtins.input", lambda _: "n")
-    monkeypatch.setattr(run.groq_client, "make_client", lambda: pytest.fail("made a client"))
+    monkeypatch.setattr(run, "client_for", lambda name: pytest.fail("made a client"))
     with pytest.raises(SystemExit):
         run.main(["--pilot"])
 
 
-def make_rows(model, n, *, cites, tokens, tool_calls=2, failures=0, error=""):
+def make_rows(provider, n, *, cites, tokens, tool_calls=2, failures=0, error="", seconds=2):
     rows = []
     for i in range(n):
         row = dict.fromkeys(run.FIELDS, "")
         row.update(
-            model=model,
+            provider=provider,
+            model=run.MODEL,
             question="demo",
             run=i,
             tools_used="get_abstract search_arxiv",
             tool_calls=tool_calls,
             tool_failures=failures,
             total_tokens=tokens,
-            seconds=2,
+            seconds=seconds,
             citation_pass=str(i < cites),
             ended_early="False",
             error=error if i == 0 else "",
@@ -142,7 +166,7 @@ def make_rows(model, n, *, cites, tokens, tool_calls=2, failures=0, error=""):
 
 
 def test_stats_values():
-    s = summarize.stats(make_rows("m", 10, cites=8, tokens=6000, failures=1))
+    s = summarize.stats(make_rows("p", 10, cites=8, tokens=6000, failures=1))
     assert s["tool_success"] == 0.5
     assert s["multi_tool"] == 1.0
     assert s["citation_pass"] == 0.8
@@ -150,37 +174,9 @@ def test_stats_values():
     assert s["cached_tokens"] == 100
 
 
-def test_candidate_passes_the_bar():
-    rows = make_rows(summarize.BASE_MODEL, 10, cites=9, tokens=6000)
-    rows += make_rows(summarize.CANDIDATE, 10, cites=8, tokens=5000)
-    text = summarize.report(rows)
-    assert "meets the pass bar" in text
-
-
-def test_candidate_fails_on_citations_tokens_and_errors():
-    rows = make_rows(summarize.BASE_MODEL, 10, cites=10, tokens=6000)
-    rows += make_rows(summarize.CANDIDATE, 10, cites=5, tokens=9000, error="x")
-    held = dict(summarize.check_candidate(summarize.by_model(rows)))
-    assert held["citation pass within 10 points of 120b"] is False
-    assert held["mean tokens <= 8000"] is False
-    assert "does not meet" in summarize.report(rows)
-
-
-def test_report_without_both_models_skips_the_bar():
-    text = summarize.report(make_rows(summarize.BASE_MODEL, 3, cites=3, tokens=1000))
-    assert "no pass bar check" in text
-
-
-def test_load_roundtrip(tmp_path):
-    out = tmp_path / "r.csv"
-    for row in make_rows("m", 2, cites=2, tokens=100):
-        run.append_row(out, row)
-    assert len(summarize.load(out)) == 2
-
-
 def test_run_without_tool_calls_counts_as_tool_failure():
-    rows = make_rows("m", 1, cites=1, tokens=100, tool_calls=0)
-    rows += make_rows("m", 1, cites=1, tokens=100, tool_calls=1)
+    rows = make_rows("p", 1, cites=1, tokens=100, tool_calls=0)
+    rows += make_rows("p", 1, cites=1, tokens=100, tool_calls=1)
     assert summarize.stats(rows)["tool_success"] == 0.5
 
 
@@ -189,7 +185,45 @@ def test_failed_tool_message_is_counted():
     assert not run._is_failed_call({"result": "No papers found."})
 
 
-def test_seconds_is_wall_clock_on_success_and_error(fake_tools):
-    ok = run.run_one(FakeClient([usage_reply("hi")]), "m", "demo", 1)
-    bad = run.run_one(FakeClient([RuntimeError("boom")]), "m", "demo", 2)
+def test_seconds_is_recorded_on_success_and_error(fake_tools):
+    ok = run.run_one(FakeClient([usage_reply("hi")]), "groq-free", "demo", 1)
+    bad = run.run_one(FakeClient([RuntimeError("boom")]), "groq-free", "demo", 2)
     assert ok["seconds"] != "" and bad["seconds"] != ""
+
+
+def test_pick_ranks_eligible_openrouter_providers_and_skips_baseline():
+    rows = make_rows("openrouter:A", 10, cites=9, tokens=6000)
+    rows += make_rows("openrouter:B", 10, cites=8, tokens=6000)
+    rows += make_rows("groq-free", 10, cites=10, tokens=6000)
+    text = summarize.report(rows)
+    assert summarize.pick(summarize.by_provider(rows)) == ["openrouter:A", "openrouter:B"]
+    assert "Pin openrouter:A. Fallback openrouter:B." in text
+
+
+def test_latency_breaks_citation_ties():
+    rows = make_rows("openrouter:slow", 10, cites=9, tokens=6000, seconds=9)
+    rows += make_rows("openrouter:fast", 10, cites=9, tokens=6000, seconds=3)
+    assert summarize.pick(summarize.by_provider(rows))[0] == "openrouter:fast"
+
+
+def test_ineligible_provider_is_named_with_the_reason():
+    rows = make_rows("openrouter:A", 10, cites=10, tokens=6000)
+    rows += make_rows("openrouter:B", 10, cites=5, tokens=9000, error="x")
+    held = dict(summarize.eligible(summarize.by_provider(rows)))["openrouter:B"]
+    failed = [label for label, ok in held if not ok]
+    assert "mean tokens <= 8000" in failed
+    assert "citation pass within 10 points of best OpenRouter provider" in failed
+    text = summarize.report(rows)
+    assert "openrouter:B: not eligible" in text and "No fallback is eligible" in text
+
+
+def test_report_says_when_nothing_qualifies():
+    rows = make_rows("openrouter:A", 10, cites=0, tokens=9000)
+    assert "No OpenRouter provider meets the selection rule" in summarize.report(rows)
+
+
+def test_load_roundtrip(tmp_path):
+    out = tmp_path / "r.csv"
+    for row in make_rows("p", 2, cites=2, tokens=100):
+        run.append_row(out, row)
+    assert len(summarize.load(out)) == 2

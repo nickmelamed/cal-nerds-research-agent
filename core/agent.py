@@ -63,10 +63,11 @@ def run_agent(
     max_steps: int = MAX_STEPS,
     tracer: Tracer | None = None,
     model: str = MODEL,
+    extra_body: dict | None = None,
 ) -> AgentResult:
     """Run the agent until it answers or reaches ``max_steps`` model calls.
 
-    Clears the tool caches first. A Groq ``tool_use_failed`` error is sent
+    Clears the tool caches first. A ``tool_use_failed`` error is sent
     back to the model once, and a second one ends the run with a message.
     """
     tracer = tracer or Tracer()
@@ -80,7 +81,13 @@ def run_agent(
     for step in range(1, max_steps + 1):
         start = time.monotonic()
         try:
-            response = chat(client, model=model, messages=messages, tools=tool_schemas)
+            response = chat(
+                client,
+                model=model,
+                messages=messages,
+                tools=tool_schemas,
+                extra_body=extra_body,
+            )
         except Exception as error:
             if "tool_use_failed" not in str(error):
                 raise

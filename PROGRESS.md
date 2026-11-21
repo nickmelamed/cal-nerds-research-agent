@@ -33,6 +33,9 @@ phase. CLAUDE.md stays stable and does not track status.
       defaults of 0, so a missing field reads as 0 cached tokens
 - [ ] `run_agent` against the real OpenAI SDK on both providers. Check the
       `tool_use_failed` error text and that `usage.total_tokens` is set
+- [ ] OpenRouter `GET /api/v1/key` returns `data.limit_remaining` for a key
+      with a credit limit, and `extra_body` provider routing (`order`,
+      `allow_fallbacks`) pins the upstream provider
 - [ ] Form cells render collapsed
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
