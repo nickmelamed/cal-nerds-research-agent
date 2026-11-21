@@ -6,7 +6,8 @@ disable-model-invocation: true
 
 1. List the queries and terms in `fixtures/manifest.json` (the demo
    questions, the guided example questions, and the test cases).
-2. Record each response through the real tools so the 3 second delay
-   applies. Never write or edit a fixture by hand.
+2. Run `.venv/bin/python scripts/record_fixtures.py`. It records each
+   response through the real tools so the 3 second delay applies and writes
+   `fixtures/responses.json`. Never write or edit a fixture by hand.
 3. Show the diff in `fixtures/` and run `make test` against the new files.
 4. Ask before committing, since `fixtures/` is protected.
