@@ -48,6 +48,9 @@ change.
 
 ## D-004: Paid workshop key, own key optional (2026-11-20)
 
+Superseded by D-008. The Groq Developer plan is not available, so the
+workshop key moved to OpenRouter.
+
 Context. Every student creating a Groq account adds setup friction for
 beginners. Groq rate limits apply per organization and per model, so a
 shared key means a shared limit (250K TPM per model on the Developer plan).
@@ -116,3 +119,25 @@ into an all-day job. The bar is fixed before any run.
 Consequences. Confidence intervals are wide at 10 runs per cell. If a model
 lands near the bar, run more before deciding. The guided questions in
 `bakeoff/questions.py` are placeholders until phase 6 picks the exercises.
+
+## D-008: Workshop key on OpenRouter instead of Groq (2026-11-21)
+
+Draft for Nick to rewrite in his own words.
+
+Context. Groq has paused new Developer plan upgrades, so a paid shared
+Groq key isn't available. Free Groq keys allow 8K tokens per minute, which
+is about one agent run.
+
+Decision. The default workshop key is a paid OpenRouter key for
+gpt-oss-120b, pinned to the most reliable provider from the bake-off.
+Students can still use their own free Groq key. Notebooks use the `openai`
+package with a base URL so either provider works. The split between
+gpt-oss-120b and gpt-oss-20b is dropped, and D-007's pass bar for 20b no
+longer applies.
+
+Why. OpenRouter doesn't rate limit paid models itself, supports per-key
+credit limits, and serves the same model. Setup stays at just opening
+Colab.
+
+Consequences. Tool calling quality depends on the upstream provider, so the
+bake-off now compares providers. Upstream providers can still throttle.

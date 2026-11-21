@@ -5,8 +5,8 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 3. Model bake-off (gpt-oss-120b, gpt-oss-20b, qwen3.8-27b),
-      including tokens per run and whether cached tokens count toward TPM.
+- [ ] Phase 3. OpenRouter provider bake-off for gpt-oss-120b plus a free Groq
+      baseline, including tokens per run and pricing.
       The scripts are built (`bakeoff/run.py`, `bakeoff/summarize.py`).
       Nick runs `python -m bakeoff.run --pilot`, then the full run, then
       `python -m bakeoff.summarize results/bakeoff-<date>.csv`. Prices need
@@ -25,25 +25,23 @@ phase. CLAUDE.md stays stable and does not track status.
       account, once with the workshop key and once with a free key
 - [ ] Colab Secrets and the `getpass` fallback both work (`get_api_key` in
       `core/client.py`)
-- [ ] 429 retry message and `remaining_tokens()` against the real Groq SDK
-      headers
-- [ ] Usage fields from the real Groq SDK: `prompt_tokens`,
+- [ ] 429 retry message, the OpenRouter credit helper, and the Groq
+      remaining-tokens helper against the real OpenAI SDK on both providers
+- [ ] Usage fields from the real OpenAI SDK on both providers: `prompt_tokens`,
       `completion_tokens`, `prompt_tokens_details.cached_tokens`, and
       `completion_tokens_details.reasoning_tokens`. The tracer reads them with
       defaults of 0, so a missing field reads as 0 cached tokens
-- [ ] Cached tokens and TPM: send the same large prompt twice and compare
-      `x-ratelimit-remaining-tokens` after each call
-- [ ] `run_agent` against the real Groq SDK. Check the `tool_use_failed`
-      error text and that `usage.total_tokens` is set
+- [ ] `run_agent` against the real OpenAI SDK on both providers. Check the
+      `tool_use_failed` error text and that `usage.total_tokens` is set
 - [ ] Form cells render collapsed
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
 - [ ] A handful of simultaneous sessions on the workshop key, watching the
-      remaining-tokens header
+      remaining OpenRouter credit
 
 ## Workshop logistics (Nick)
 
-- [ ] Dedicated workshop key, spend limit around $50, budget alerts
+- [ ] Dedicated OpenRouter workshop key with a credit limit
 - [ ] Links in slides, pre-workshop email (own key optional), and wrap-up
       slide (how to get a free key)
 - [ ] Revoke the workshop key after the workshop
@@ -53,7 +51,7 @@ phase. CLAUDE.md stays stable and does not track status.
 - [x] Phase 1. Core tools (`search_arxiv`, `get_abstract`, `lookup_wikipedia`)
       with fixtures, fast tests, and live tests (PR #1)
 - [x] Phase 1. Client wrapper with 429 handling and rate limit header reader
-      (PR #1)
+      (PR #1). Now covers both OpenRouter and Groq, see D-008
 - [x] Phase 2. Tool schemas, agent loop, tracer, and citation check, with
       mocked-Groq tests (PR #3)
 
@@ -61,7 +59,8 @@ phase. CLAUDE.md stays stable and does not track status.
 
 Starting point for planning the bake-off in a separate conversation. The
 approach below is a proposal, not an agreed plan. Read "Model selection" and
-"Groq setup and capacity" in docs/SPEC.md first.
+"Providers and capacity" in docs/SPEC.md first. The handoff notes below
+predate D-008 and describe the old Groq model comparison.
 
 What phase 2 leaves in place.
 

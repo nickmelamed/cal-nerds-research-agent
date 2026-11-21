@@ -4,7 +4,7 @@ PY ?= .venv/bin/python
 
 setup:
 	python3 -m venv .venv
-	$(PY) -m pip install groq requests jupytext nbformat pytest ruff hypothesis
+	$(PY) -m pip install openai requests jupytext nbformat pytest ruff hypothesis
 	pre-commit install
 
 build:
@@ -25,6 +25,6 @@ agent-check:
 	ruff check .
 	ruff format --check .
 	python3 scripts/agent/check_style.py .
-	! git grep -nIE --untracked 'gsk_[A-Za-z0-9]{20,}'
+	! git grep -nIE --untracked 'gsk_[A-Za-z0-9]{20,}|sk-or-[A-Za-z0-9-]{20,}'
 
 ci: agent-check

@@ -19,6 +19,7 @@ paths:
   through the tools so the 3 second delay applies. Keep them few.
 - The citation check gets cases with known answers. A cited paper the run
   retrieved, one it didn't, a made-up ID, and an answer with no citations.
-- Groq is mocked in fast tests. Never call it from the test suite.
+- The model providers (OpenRouter and Groq) are mocked in fast tests. Never
+  call them from the test suite.
 - Coverage is a floor, not the goal. Do not write hollow tests to raise a
   number.

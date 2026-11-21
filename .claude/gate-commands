@@ -1,6 +1,6 @@
 # Fast checks that must pass before Claude may end a turn. One shell command
 # per line, run from the repo root. Keep the total under a few minutes.
 python3 scripts/agent/check_style.py .
-! git grep -nIE --untracked 'gsk_[A-Za-z0-9]{20,}'
+! git grep -nIE --untracked 'gsk_[A-Za-z0-9]{20,}|sk-or-[A-Za-z0-9-]{20,}'
 # Once the Makefile and tools exist, replace both lines above with:
 # make agent-check

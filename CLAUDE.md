@@ -23,18 +23,20 @@ docs/DECISIONS.md.
    `notebooks_src/` and rebuild.
 2. Every built notebook is self-contained. No installing this repo and no
    fetching code from GitHub at runtime. The only pip install in a notebook
-   is `groq`.
+   is `openai`.
 3. Tools call the arXiv and Wikipedia APIs with `requests` and `xml.etree`.
    Do not add the `arxiv` or `wikipedia` packages.
-4. Never write, print, or commit a Groq API key. Code reads `GROQ_API_KEY`
-   from the environment locally and from Colab Secrets in notebooks, then
-   falls back to `getpass`. Nick adds the workshop key to student copies by
-   hand.
+4. Never write, print, or commit an API key. `OPENROUTER_API_KEY` is the
+   workshop key and `GROQ_API_KEY` is a student's own key. Code reads them
+   from the environment locally and from Colab Secrets in notebooks. If
+   `GROQ_API_KEY` is set the setup cell uses Groq, otherwise it uses
+   OpenRouter, and if neither works it falls back to `getpass`. Nick adds
+   the workshop key to student copies by hand.
 5. Every arXiv request, including in tests and the bake-off, waits at least
-   3 seconds after the previous one. Never load-test arXiv or Groq from a
-   script.
-6. Keep an agent run near 6 to 8k tokens, since 60 students share 250K tokens
-   per minute per model. Do not raise result counts or text lengths without
+   3 seconds after the previous one. Never load-test arXiv, OpenRouter, or Groq
+   from a script.
+6. Keep an agent run near 6 to 8k tokens. The reasons are cost, latency, and
+   the 8K tokens per minute of a free Groq key. Do not raise result counts or text lengths without
    bake-off numbers in `results/` to back it.
 7. The citation check runs after every agent answer in all three notebooks,
    and counts a citation as verified only if a tool returned it in that run.
@@ -54,7 +56,7 @@ make setup        # venv and dev dependencies
 make build        # assemble notebooks/ from core/ and notebooks_src/
 make test         # fast tests with fixtures, no network
 make test-live    # live arXiv and Wikipedia tests, slow, rate-limited
-make bakeoff      # model comparison, spends Groq credits, Nick runs it
+make bakeoff      # model comparison, spends OpenRouter and Groq credits, Nick runs it
 make agent-check  # what the Stop hook runs
 make ci           # exactly what CI runs
 ```

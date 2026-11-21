@@ -68,5 +68,5 @@ Three tools keep the printed trace interesting, since the agent has to choose be
 
 Some of the above was decided later in planning and lives in docs/SPEC.md instead. Where they differ, SPEC.md wins.
 
-- Groq keys. A paid workshop key is now the default and a student's own free key is optional. "Every tool must be free" still holds for students, since they pay nothing. Setup no longer requires a Groq account.
+- Model keys. The workshop key is now a paid OpenRouter key and a student's own free Groq key is optional. "Every tool must be free" still holds for students, since they pay nothing. Setup no longer requires a Groq account.
 - The tool return limits (3 search results, truncated abstracts) come from the token budget in SPEC.md.
