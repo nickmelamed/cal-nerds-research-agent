@@ -5,9 +5,9 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 1. Core tools (`search_arxiv`, `get_abstract`, `lookup_wikipedia`)
+- [x] Phase 1. Core tools (`search_arxiv`, `get_abstract`, `lookup_wikipedia`)
       with fixtures, fast tests, and live tests
-- [ ] Phase 1. Client wrapper with 429 handling and rate limit header reader
+- [x] Phase 1. Client wrapper with 429 handling and rate limit header reader
 
 ## Next
 
@@ -23,7 +23,8 @@ phase. CLAUDE.md stays stable and does not track status.
 
 - [ ] Each notebook runs with Run all in a fresh runtime on a fresh Google
       account, once with the workshop key and once with a free key
-- [ ] Colab Secrets and the `getpass` fallback both work
+- [ ] Colab Secrets and the `getpass` fallback both work (`core/client.py` `get_api_key`)
+- [ ] 429 retry message and `remaining_tokens()` against the real Groq SDK headers
 - [ ] Form cells render collapsed
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block

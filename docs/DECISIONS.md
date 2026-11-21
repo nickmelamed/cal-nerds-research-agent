@@ -62,3 +62,22 @@ limit and revoking the key afterward cap the risk of the key leaking.
 
 Consequences. Depends on gpt-oss-20b passing the bake-off. Students who
 want to keep building need their own key after the workshop.
+
+## D-005: Recorded responses keyed by request, tools return dicts (2026-11-21)
+
+Context. OFFLINE mode and the fast tests need real arXiv and Wikipedia
+responses, and the citation check in phase 2 needs to read ids and titles
+from tool output.
+
+Decision. `fixtures/responses.json` stores raw response bodies keyed by the
+request URL plus sorted query parameters, and `fixtures/manifest.json` lists
+what to record. Tools return small dicts (`id`, `title`, and so on) on
+success and a plain message string on failure. `get_abstract` returns `id`,
+`title`, and `abstract`.
+
+Why. The tools run unchanged against the recordings, so offline behavior
+matches live behavior. Dicts give the citation check ids and titles without
+parsing text.
+
+Consequences. A new query or term needs a new recording through the
+refresh-fixtures skill, since a missing key behaves like a failed request.
