@@ -1,0 +1,27 @@
+[project]
+name = "cal-nerds-research-agent"
+version = "0.0.0"
+description = "Notebooks for the Build an Agent segment of Cal NERDS AI 101"
+requires-python = ">=3.10"
+
+[dependency-groups]
+dev = [
+    "groq",
+    "requests",
+    "jupytext",
+    "nbformat",
+    "pytest",
+    "ruff",
+    "hypothesis",
+]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["scripts/agent", "cal-nerds-claude-code-handoff.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+[tool.pytest.ini_options]
+markers = ["slow: live network tests against arXiv and Wikipedia"]
+testpaths = ["tests"]

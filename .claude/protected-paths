@@ -1,0 +1,14 @@
+# Edits to these paths need the owner's approval, even in auto mode.
+# One glob per line, relative to the repo root. Text after "  #" is the reason.
+.claude/settings.json  # agent permissions and hooks
+.claude/protected-paths  # this list
+.claude/gate-commands  # the definition of done
+scripts/agent/*  # the checks that gate Claude's work
+.pre-commit-config.yaml  # commit hooks
+.github/workflows/*  # CI
+*.lock  # locked dependencies
+.env  # secrets
+core/citations.py  # the citation check is the point of the demo
+fixtures/*  # recorded real API responses, never hand-written
+results/*  # bake-off outputs that docs cite
+docs/SPEC.md  # the agreed design

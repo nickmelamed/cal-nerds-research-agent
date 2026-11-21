@@ -1,0 +1,12 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-style
+        name: comment and doc style
+        entry: python3 scripts/agent/check_style.py
+        language: system
+        types_or: [python, markdown]
+      - id: no-groq-keys
+        name: no Groq API keys
+        entry: bash -c '! grep -nIE "gsk_[A-Za-z0-9]{20,}" "$@"' --
+        language: system
