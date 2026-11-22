@@ -260,3 +260,13 @@ def test_append_row_refuses_a_file_with_other_columns(tmp_path):
     out.write_text("provider,model\nx,y\n")
     with pytest.raises(ValueError, match="different columns"):
         run.append_row(out, dict.fromkeys(run.FIELDS, ""))
+
+
+def test_unverified_citations_are_listed(fake_tools):
+    client = FakeClient(
+        [
+            usage_reply("See 9999.99999."),
+        ]
+    )
+    row = run.run_one(client, "groq-free", "demo", 1)
+    assert row["unverified_items"] == "9999.99999"

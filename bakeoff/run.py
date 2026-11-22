@@ -42,6 +42,7 @@ FIELDS = [
     "seconds",
     "verified",
     "unverified",
+    "unverified_items",
     "citation_pass",
     "ended_early",
     "remaining_tokens",
@@ -123,6 +124,7 @@ def run_one(client, provider: str, question_key: str, run: int) -> dict:
             steps=result.steps,
             verified=len(report.verified),
             unverified=len(report.unverified),
+            unverified_items=" | ".join(report.unverified),
             citation_pass=bool(report.verified) and not report.unverified,
             ended_early=result.answer.startswith(ENDED_EARLY_PREFIXES),
         )

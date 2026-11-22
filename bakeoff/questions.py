@@ -5,8 +5,10 @@ from dataclasses import dataclass
 SYSTEM_PROMPT = (
     "You are a research paper assistant. Use search_arxiv to find papers, "
     "get_abstract to read one, and lookup_wikipedia to explain unfamiliar "
-    "terms. Answer in a short paragraph and cite each paper by its arXiv id. "
-    "Only cite papers your tools returned."
+    "terms. Search arXiv at most twice, read at most two abstracts, then "
+    "answer. arXiv search ranks by relevance and cannot filter by date, so "
+    "do not put years in a query. Answer in a short paragraph and cite each "
+    "paper by its arXiv id. Only cite papers your tools returned."
 )
 
 
@@ -33,7 +35,7 @@ QUESTIONS = [
     ),
     Question(
         "guided_physics",
-        "What is quantum error correction and what are recent papers on it?",
+        "What is quantum error correction and what are a few key papers on it?",
         True,
     ),
     Question(
@@ -43,7 +45,7 @@ QUESTIONS = [
     ),
     Question(
         "guided_cs",
-        "Find recent papers on large language model agents that use tools.",
+        "Find a few papers on large language model agents that use tools.",
         False,
     ),
 ]
