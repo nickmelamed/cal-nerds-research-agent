@@ -47,6 +47,7 @@ FIELDS = [
     "ended_early",
     "remaining_tokens",
     "error",
+    "answer",
 ]
 
 # Prefixes of the messages _run_tool returns for a bad call.
@@ -125,6 +126,7 @@ def run_one(client, provider: str, question_key: str, run: int) -> dict:
             verified=len(report.verified),
             unverified=len(report.unverified),
             unverified_items=" | ".join(report.unverified),
+            answer=result.answer,
             citation_pass=bool(report.verified) and not report.unverified,
             ended_early=result.answer.startswith(ENDED_EARLY_PREFIXES),
         )

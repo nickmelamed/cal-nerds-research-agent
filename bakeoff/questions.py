@@ -28,6 +28,12 @@ QUESTIONS = [
         True,
     ),
     Question(
+        "demo_open",
+        "Find a few papers on deep learning for protein structure prediction "
+        "and explain in plain language what one of them does.",
+        True,
+    ),
+    Question(
         "demo_backup",
         "What is the attention mechanism in transformers, and which papers "
         "introduced or improved it?",
