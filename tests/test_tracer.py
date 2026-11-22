@@ -45,3 +45,9 @@ def test_summary_splits_token_kinds():
     assert summary["completion_tokens"] == 70
     assert summary["cached_tokens"] == 150
     assert summary["reasoning_tokens"] == 15
+
+
+def test_tool_results_keep_the_arguments():
+    tracer = Tracer(verbose=False)
+    tracer.tool_call(2, "search_arxiv", {"query": "x"}, [])
+    assert tracer.tool_results[0]["args"] == {"query": "x"}

@@ -47,7 +47,7 @@ class Tracer:
 
     def tool_call(self, step: int, name: str, args: dict, result) -> None:
         """Print one tool call and keep the raw result for the citation check."""
-        self.tool_results.append({"step": step, "name": name, "result": result})
+        self.tool_results.append({"step": step, "name": name, "args": args, "result": result})
         shown = result if isinstance(result, str) else json.dumps(result)
         if len(shown) > DISPLAY_CHARS:
             shown = shown[:DISPLAY_CHARS] + "..."

@@ -3,6 +3,7 @@
 import argparse
 import csv
 import datetime
+import json
 import time
 from pathlib import Path
 
@@ -20,6 +21,7 @@ DEFAULT_PROVIDERS = [f"{OPENROUTER_PREFIX}auto", GROQ_BASELINE]
 PILOT_RUNS = 3
 DEFAULT_RUNS = 10
 ESTIMATED_TOKENS_PER_RUN = 8000
+SEQUENCE_NOTE_CHARS = 80
 RESULTS_DIR = Path(__file__).parent.parent / "results"
 
 FIELDS = [
@@ -31,6 +33,7 @@ FIELDS = [
     "tools_used",
     "tool_calls",
     "tool_failures",
+    "tool_sequence",
     "prompt_tokens",
     "completion_tokens",
     "cached_tokens",
@@ -52,6 +55,27 @@ FAILURE_PREFIXES = (
     "The arguments did not match",
 )
 ENDED_EARLY_PREFIXES = ("Stopped after", "The model could not format")
+
+
+def tool_sequence(tool_results: list[dict]) -> str:
+    """Return the calls of one run as JSON: step, name, args, and a result note.
+
+    A string result is a message to the model, so its start is kept. Other
+    results are marked ok.
+    """
+    calls = []
+    for entry in tool_results:
+        result = entry["result"]
+        note = result[:SEQUENCE_NOTE_CHARS] if isinstance(result, str) else "ok"
+        calls.append(
+            {
+                "step": entry["step"],
+                "name": entry["name"],
+                "args": entry.get("args", {}),
+                "result": note,
+            }
+        )
+    return json.dumps(calls)
 
 
 def _is_failed_call(entry: dict) -> bool:
@@ -108,6 +132,7 @@ def run_one(client, provider: str, question_key: str, run: int) -> dict:
         tools_used=" ".join(sorted(set(names))),
         tool_calls=len(names),
         tool_failures=sum(_is_failed_call(e) for e in tracer.tool_results),
+        tool_sequence=tool_sequence(tracer.tool_results),
         prompt_tokens=summary["prompt_tokens"],
         completion_tokens=summary["completion_tokens"],
         cached_tokens=summary["cached_tokens"],
@@ -125,6 +150,11 @@ def default_out_path() -> Path:
 def append_row(path: Path, row: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     is_new = not path.exists()
+    if not is_new:
+        with path.open(newline="") as handle:
+            header = next(csv.reader(handle), [])
+        if header != FIELDS:
+            raise ValueError(f"{path} has different columns. Use a new --out file.")
     with path.open("a", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=FIELDS)
         if is_new:

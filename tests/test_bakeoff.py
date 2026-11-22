@@ -1,4 +1,5 @@
 import csv
+import json
 from types import SimpleNamespace as NS
 
 import pytest
@@ -227,3 +228,35 @@ def test_load_roundtrip(tmp_path):
     for row in make_rows("p", 2, cites=2, tokens=100):
         run.append_row(out, row)
     assert len(summarize.load(out)) == 2
+
+
+def test_tool_sequence_records_args_and_message_results():
+    results = [
+        {"step": 1, "name": "search_arxiv", "args": {"query": "q"}, "result": [{"id": "1"}]},
+        {
+            "step": 2,
+            "name": "search_arxiv",
+            "args": {"query": "q"},
+            "result": "No papers found. " * 20,
+        },
+    ]
+    calls = json.loads(run.tool_sequence(results))
+    assert calls[0] == {"step": 1, "name": "search_arxiv", "args": {"query": "q"}, "result": "ok"}
+    assert calls[1]["result"].startswith("No papers found.")
+    assert len(calls[1]["result"]) == run.SEQUENCE_NOTE_CHARS
+
+
+def test_run_one_stores_the_tool_sequence(fake_tools):
+    client = FakeClient(
+        [usage_reply(calls=[tool_call("search_arxiv", {"query": "x"})]), usage_reply("done")]
+    )
+    row = run.run_one(client, "groq-free", "demo", 1)
+    calls = json.loads(row["tool_sequence"])
+    assert calls == [{"step": 1, "name": "search_arxiv", "args": {"query": "x"}, "result": "ok"}]
+
+
+def test_append_row_refuses_a_file_with_other_columns(tmp_path):
+    out = tmp_path / "old.csv"
+    out.write_text("provider,model\nx,y\n")
+    with pytest.raises(ValueError, match="different columns"):
+        run.append_row(out, dict.fromkeys(run.FIELDS, ""))
