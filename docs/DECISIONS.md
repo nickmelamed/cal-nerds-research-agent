@@ -125,8 +125,6 @@ lands near the bar, run more before deciding. The guided questions in
 
 ## D-008: Workshop key on OpenRouter instead of Groq (2026-11-21)
 
-Draft for Nick to rewrite in his own words.
-
 Context. Groq has paused new Developer plan upgrades, so a paid shared
 Groq key isn't available. Free Groq keys allow 8K tokens per minute, which
 is about one agent run.
