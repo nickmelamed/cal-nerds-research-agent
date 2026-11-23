@@ -108,7 +108,7 @@ Exercise 3 needs testing. A vague description like "Gets information" may not re
 
 ## Notebook 3. Full-code starter
 
-Starts with a working loop and only `search_arxiv`. No error handling, no step cap, no logging, so those are real tasks. Tasks are ordered by priority so finishing two still gives a student something to share. The 429 retry lives in the setup cell's client wrapper rather than the loop, so students on the shared key are protected even before they finish task 2.
+Starts with a working loop and only `search_arxiv`. No error handling for tool failures, no step cap, no logging, so those are real tasks. The loop does answer an unknown tool name or invalid JSON with a message, so a first mistake does not end the run. Tasks are ordered by priority so finishing two still gives a student something to share. The 429 retry lives in the setup cell's client wrapper rather than the loop, so students on the shared key are protected even before they finish task 2.
 
 | # | Task | Checkpoint |
 |---|---|---|

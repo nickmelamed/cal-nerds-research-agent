@@ -40,9 +40,11 @@ docs/DECISIONS.md.
    bake-off numbers in `results/` to back it.
 7. The citation check runs after every agent answer in all three notebooks,
    and counts a citation as verified only if a tool returned it in that run.
-8. The full-code starter deliberately lacks error handling, a step cap, and
-   token logging, because those are student tasks. Do not add them there. The
-   429 retry lives in the setup cell's client wrapper in every notebook.
+8. The full-code starter deliberately lacks error handling for tool failures,
+   a step cap, and token logging, because those are student tasks. Do not add
+   them there. It does answer a bad tool name or invalid JSON, so a Run all
+   does not crash on the first slip. The 429 retry lives in the setup cell's
+   client wrapper in every notebook.
 9. Numbers in docs (pass rates, tokens per run, latency, cost) come from
    files in `results/`. Write TBD until they exist.
 10. Never weaken a test, lint rule, or check to make it pass.

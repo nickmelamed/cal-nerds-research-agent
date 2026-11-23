@@ -1,5 +1,5 @@
 # %% [markdown]
-# # Research paper assistant: the finished agent
+# # Research Paper Assistant (The Finished Agent)
 #
 # This agent searches arXiv for papers, reads abstracts, looks up unfamiliar
 # terms on Wikipedia, and answers with citations. Afterwards it checks that
@@ -22,7 +22,7 @@
 # @core client
 
 # %% [markdown]
-# ## 2. The tools
+# ## 2. The Tools
 #
 # A tool is a Python function the model can ask us to run. There are three.
 # `search_arxiv` finds papers, `get_abstract` reads one abstract, and
@@ -45,7 +45,7 @@
 # @core tools lookup_wikipedia
 
 # %% [markdown]
-# ## 3. Connect to the model
+# ## 3. Connect to the Model
 #
 # `OFFLINE = False` means the tools call arXiv and Wikipedia. Set it to
 # `True` to use saved responses instead. It only replaces the tools. The
@@ -67,7 +67,7 @@ client = make_client()
 assert smoke_test(client), "Fix the key problem above, then run this cell again."
 
 # %% [markdown]
-# ## 4. Tell the model what the tools do
+# ## 4. Tell the Model what the Tools Do
 #
 # The model sees only these descriptions, not our Python code, so it picks
 # tools based on them.
@@ -102,7 +102,7 @@ SYSTEM_PROMPT = (
 )
 
 # %% [markdown]
-# ## 6. Ask a question
+# ## 6. Ask a Question
 #
 # Watch the trace. Each step shows which tool the model chose and what came
 # back.
@@ -116,7 +116,7 @@ QUESTION = (
 result = run_agent(client, QUESTION, SYSTEM_PROMPT, TOOLS)
 
 # %% [markdown]
-# ## 7. Check the citations
+# ## 7. Check the Citations
 #
 # Models sometimes invent papers. This check looks at every arXiv id and
 # quoted title in the answer and counts it only if a tool returned it in
@@ -130,7 +130,7 @@ if report.unverified:
     print("Not retrieved by any tool:", report.unverified)
 
 # %% [markdown]
-# ## 8. A backup question
+# ## 8. A Backup Question
 #
 # Same agent, a different topic.
 
@@ -147,7 +147,7 @@ if report.unverified:
     print("Not retrieved by any tool:", report.unverified)
 
 # %% [markdown]
-# ## 9. Compare with a chatbot
+# ## 9. Compare with a Chatbot
 #
 # Ask a chatbot with web search off the same first question. Then ask it
 # again with web search on. Look at which papers it names and whether you
