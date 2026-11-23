@@ -10,7 +10,7 @@ from core.client import chat
 from core.tracer import Tracer
 
 MODEL = "openai/gpt-oss-120b"
-MAX_STEPS = 8
+MAX_STEPS = 6
 RESULT_CHARS = 2000
 TRUNCATION_MARK = " [truncated]"
 FINAL_STEP_NOTE = (
