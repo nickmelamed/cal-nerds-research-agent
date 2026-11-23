@@ -107,3 +107,16 @@ def test_built_demo_runs_offline_with_a_fake_model(demo):
     assert namespace["report"].unverified == []
     first = [c for c in fake.requests if any(m.get("role") == "tool" for m in c)]
     assert first, "the first question should have called a tool"
+
+
+def test_each_tool_gets_its_own_cell(demo):
+    cells = code_cells(demo)
+    for name in ("search_arxiv", "get_abstract", "lookup_wikipedia"):
+        owners = [c for c in cells if re.search(rf"^def {name}\(", c, re.MULTILINE)]
+        assert len(owners) == 1
+        assert len(re.findall(r"^def ", owners[0], re.MULTILINE)) == 1
+
+
+def test_unknown_tool_part_fails():
+    with pytest.raises(build.BuildError):
+        build.core_source("tools", "no_such_tool")

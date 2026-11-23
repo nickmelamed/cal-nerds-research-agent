@@ -7,6 +7,7 @@ to fail when the committed notebooks are out of date.
 """
 
 import argparse
+import ast
 import json
 import re
 import sys
@@ -26,7 +27,7 @@ COLAB_URL = (
 )
 BADGE = "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({url})"
 
-CORE_MARKER = re.compile(r"^# @core (\w+)[ \t]*$", re.MULTILINE)
+CORE_MARKER = re.compile(r"^# @core (\w+)(?: (\w+))?[ \t]*$", re.MULTILINE)
 OFFLINE_MARKER = re.compile(r"^# @offline-data[ \t]*$", re.MULTILINE)
 CORE_IMPORT = re.compile(
     r"^(?:from core(?:\.\w+)* import (?:\([^)]*\)|[^\n]*)|import core(?:\.\w+)*[^\n]*)\n",
@@ -37,11 +38,18 @@ TOOLS_PREFIX = re.compile(r"\btools\.(\w+)")
 LEFTOVER = re.compile(r"^\s*(?:from|import) core\b|\btools\.[a-z_]+\(", re.MULTILINE)
 
 
+SPLIT_FUNCTIONS = {"tools": ("search_arxiv", "get_abstract", "lookup_wikipedia")}
+
+
 class BuildError(Exception):
     pass
 
 
-def core_source(module: str) -> str:
+def core_source(module: str, part: str | None = None) -> str:
+    """Return a module's inlined code, or one named function, or ``helpers``.
+
+    ``helpers`` is everything except the functions in ``SPLIT_FUNCTIONS``.
+    """
     path = CORE_DIR / f"{module}.py"
     if not path.exists():
         raise BuildError(f"core/{module}.py does not exist")
@@ -49,7 +57,26 @@ def core_source(module: str) -> str:
     text = TOOLS_PREFIX.sub(r"\1", text)
     if LEFTOVER.search(text):
         raise BuildError(f"core/{module}.py still refers to core after inlining")
+    if part is not None:
+        text = pick_part(text, module, part)
     return text.strip() + "\n"
+
+
+def pick_part(text: str, module: str, part: str) -> str:
+    wanted = SPLIT_FUNCTIONS.get(module, ())
+    lines = text.splitlines()
+    spans = {
+        node.name: (node.lineno - 1, node.end_lineno)
+        for node in ast.parse(text).body
+        if isinstance(node, ast.FunctionDef) and node.name in wanted
+    }
+    if part == "helpers":
+        drop = {i for start, end in spans.values() for i in range(start, end)}
+        return "\n".join(line for i, line in enumerate(lines) if i not in drop)
+    if part not in spans:
+        raise BuildError(f"core/{module}.py has no splittable function {part}")
+    start, end = spans[part]
+    return "\n".join(lines[start:end])
 
 
 def offline_source() -> str:
@@ -59,7 +86,7 @@ def offline_source() -> str:
 
 def expand(source: str) -> str:
     """Replace the markers in one cell's source."""
-    source = CORE_MARKER.sub(lambda m: core_source(m.group(1)).rstrip("\n"), source)
+    source = CORE_MARKER.sub(lambda m: core_source(m.group(1), m.group(2)).rstrip("\n"), source)
     return OFFLINE_MARKER.sub(lambda m: offline_source().rstrip("\n"), source)
 
 

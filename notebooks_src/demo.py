@@ -29,8 +29,20 @@
 # `lookup_wikipedia` explains a term.
 
 # %%
-# @title The three tools
-# @core tools
+# @title Tool helpers and settings
+# @core tools helpers
+
+# %%
+# @title search_arxiv: find papers
+# @core tools search_arxiv
+
+# %%
+# @title get_abstract: read one abstract
+# @core tools get_abstract
+
+# %%
+# @title lookup_wikipedia: explain a term
+# @core tools lookup_wikipedia
 
 # %% [markdown]
 # ## 3. Connect to the model
