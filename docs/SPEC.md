@@ -98,11 +98,11 @@ Tool code is pre-written and collapsed. Students only edit text cells and plain-
 | 0 | Setup, then run the agent once on a provided question and read the trace together | 5 |
 | 1 | System prompt. Run the same question with a plain-language prompt and a technical prompt, side by side via a `compare()` helper | 10 |
 | 2 | Your field. Change the question to something in your own major or research area | 10 |
-| 3 | Break a tool description. Make one description vague or misleading and watch the agent skip or misuse that tool | 12 |
+| 3 | Change a tool description. Predict what happens, change one description, and compare the trace with the prediction | 12 |
 | 4 | Stretch. Remove a tool entirely, or add a rule to the system prompt like "always define jargon with Wikipedia" | as time allows |
 | End | Share-out cell that prints the question, number of steps, tools used, citation check result and the answer | 3 |
 
-Exercise 3 needs testing. A vague description like "Gets information" may not reliably change behavior. A misleading one, such as describing `search_arxiv` as a dictionary lookup, usually does. Ship whichever wording reliably produces visible misbehavior on the chosen models, and offer both as suggestions. The citation check makes the damage visible here too, since a broken search tool tends to produce uncited or unverified answers.
+Exercise 3 was tested in three bake-off runs, see D-012. A vague, misleading, or "out of service" description did not change which tools gpt-oss-120b used, so the exercise asks students to predict and compare and does not promise a visible failure. The citation check passed in all of those runs.
 
 `compare()` runs the two prompts one after the other rather than in parallel, to keep bursts against the shared pool smaller.
 
