@@ -56,7 +56,9 @@ def make_client(provider: str | None = None):
     from openai import OpenAI
 
     chosen = provider or choose_provider()
-    key = get_api_key(chosen)
+    key = _secret(KEY_NAMES[chosen]) or getpass(
+        "Paste your API key (the workshop key, or your own Groq key): "
+    )
     if provider is None and key.startswith(GROQ_KEY_PREFIX):
         chosen = "groq"
     _active["provider"] = chosen

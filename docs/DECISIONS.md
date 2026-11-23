@@ -139,16 +139,18 @@ gpt-oss-120b and gpt-oss-20b is dropped, and D-007's pass bar for 20b no
 longer applies.
 
 Why. OpenRouter doesn't rate limit paid models itself, supports per-key
-credit limits, and serves the same model. Setup stays at just opening
-Colab.
+credit limits, and serves the same model. Students need no key of
+their own.
 
 Consequences. Tool calling quality depends on the upstream provider, so the
 bake-off now compares providers. Upstream providers can still throttle.
 
 ## D-009: Six step cap, forced final answer, and quote rule (2026-11-23)
 
-Context. With 8 steps and tools always on, about half of the first pilot
-runs ended at the step cap without an answer (`results/bakeoff-2026-11-21.csv`).
+Context. With 8 steps and tools always on, 22 of the 45 pilot runs on the
+three OpenRouter routes that served requests ended at the step cap without
+an answer (`results/bakeoff-2026-11-21.csv`). All 15 google-vertex runs
+failed with a routing error.
 Searching again and again for papers that are not on arXiv, or for dates
 that arXiv cannot filter on, caused most of them. After the prompt and
 question changes, 15 of 120 runs still capped (`results/bakeoff-main.csv`).
@@ -158,6 +160,12 @@ asking for an answer. The cap is 6 steps. The bake-off prompt limits
 searches and tells the model that search cannot filter by date. The
 citation check ignores quoted phrases that read as examples, not titles,
 and reads Unicode hyphens inside old-style arXiv ids.
+
+A quoted phrase now counts as unverified only if it starts in uppercase,
+does not end in a period, and has no arrows or math symbols. This removes
+false alarms on quoted example text, and it also means a made-up title
+written in lowercase or ending in a period is not flagged. Arxiv ids are
+checked as before, so a made-up id is still caught.
 
 Why. With the 8 step cap and the forced answer, mean tokens were 8,195 per
 run (`results/bakeoff-final-loop.csv`), over the 8,000 bar. Prompt tokens

@@ -26,8 +26,7 @@ phase. CLAUDE.md stays stable and does not track status.
       remaining-tokens helper against the real OpenAI SDK on both providers
 - [ ] Usage fields from the real OpenAI SDK on both providers: `prompt_tokens`,
       `completion_tokens`, `prompt_tokens_details.cached_tokens`, and
-      `completion_tokens_details.reasoning_tokens`. The tracer reads them with
-      defaults of 0, so a missing field reads as 0 cached tokens
+      `completion_tokens_details.reasoning_tokens`. Missing fields read as 0
 - [ ] `run_agent` against the real OpenAI SDK on both providers. Check the
       `tool_use_failed` error text and that `usage.total_tokens` is set
 - [ ] OpenRouter `GET /api/v1/key` returns `data.limit_remaining` for a key
@@ -68,6 +67,12 @@ phase. CLAUDE.md stays stable and does not track status.
   knowledge, as long as the cited ids were retrieved. Say so in the demo
   script.
 
+## Phase 5 notes from the bake-off
+
+- The full-code starter keeps its own bare loop. It must not get the forced
+  last step, the empty-reply retry, or the `extra_body` argument, since the
+  step cap and error handling are student tasks.
+
 ## Phase 6 notes from the bake-off
 
 - Exercise 2 lets students pick a question. A question that asks for
@@ -80,12 +85,9 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Phase 3 handoff notes
 
-Written before the bake-off and partly out of date. D-008 replaced the model
-comparison with a provider comparison.
-
 Starting point for planning the bake-off in a separate conversation. The
 approach below is a proposal, not an agreed plan. Read "Model selection" and
-"Providers and capacity" in docs/SPEC.md first. The handoff notes below
+"Providers and capacity" in docs/SPEC.md first. These handoff notes
 predate D-008 and describe the old Groq model comparison.
 
 What phase 2 leaves in place.

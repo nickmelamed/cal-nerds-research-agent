@@ -24,7 +24,7 @@ Build for about 60 students.
 
 The default is OpenRouter with a paid key Nick controls, set to gpt-oss-120b. The optional provider is Groq with a student's own free key. Both expose the OpenAI-compatible chat completions API, so notebooks use the `openai` package with a base URL setting.
 
-Free Groq limits for gpt-oss-120b are 30 RPM, 1K RPD, 8K TPM and 200K TPD per account. A run can pause on 429s, which is acceptable for a fallback. These are the fallback numbers and come from Groq's docs.
+Free Groq limits for gpt-oss-120b are 30 RPM, 1K RPD, 8K TPM and 200K TPD per account. A run can pause on 429s, which is acceptable for a fallback.
 
 OpenRouter does not enforce rate limits on paid models, but the upstream providers can throttle or go down. Pin gpt-oss-120b to the provider with the most reliable tool calling in the bake-off, with one fallback, using OpenRouter's provider routing settings.
 
@@ -36,7 +36,7 @@ OpenRouter does not enforce rate limits on paid models, but the upstream provide
 
 ### Token budget
 
-Keep each run near 6 to 8k tokens. The reasons are cost, latency, and the 8K TPM of a free Groq key. Measured in the bake-off. Cuts: 3 search results instead of 5, abstracts truncated to about 150 words, short tool schemas, Wikipedia summaries cut to 2 or 3 sentences.
+Keep each run near 6 to 8k tokens, so a run fits the 8K TPM of a free Groq key and stays cheap and fast. The 6 step cap and forced last answer in D-009 brought the mean to 6,233 (`results/bakeoff-six-steps.csv`). Cuts: 3 search results instead of 5, abstracts truncated to about 150 words, short tool schemas, Wikipedia summaries cut to 2 or 3 sentences.
 
 ### Cost
 
@@ -66,7 +66,7 @@ The `OFFLINE` flag ships in all three notebooks with cached results for the prov
 | `get_abstract(paper_id)` | Fetches by `id_list`, truncated to about 150 words. Reuses a per-run cache so it doesn't re-hit arXiv for papers the search already returned |
 | `lookup_wikipedia(term)` | REST summary endpoint with a proper User-Agent. Falls back to Wikipedia search when the exact title misses. Truncates to 2 or 3 sentences |
 | `TOOLS` schemas | Short JSON schemas with descriptions in their own cell so the guided track can edit text without touching code |
-| `run_agent(question, system_prompt, tools, max_steps)` | The decide, call tool, read result, repeat loop. Handles Groq's `tool_use_failed` errors by feeding the error back to the model once before giving up. Handles 429s with `retry-after` when present |
+| `run_agent(question, system_prompt, tools, max_steps)` | The decide, call tool, read result, repeat loop. Handles `tool_use_failed` errors by feeding the error back to the model once before giving up. Handles 429s with `retry-after` when present |
 | `Tracer` | Prints each step readably. Step number, the model's tool choice and arguments, a truncated result, final answer. Also collects tokens and latency per call |
 | `check_citations(answer, trace)` | Pulls every arXiv ID or title out of the final answer and confirms each was actually returned by a tool during this run |
 
