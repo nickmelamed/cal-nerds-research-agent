@@ -12,4 +12,5 @@
   reply once.
 - Read Unicode hyphens in arXiv ids and ignore quoted examples in the
   citation check.
+- Add the full-code starter notebook with four student tasks and checks.
 - Add recorded fixtures, fast tests, and slow live tests.

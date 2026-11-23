@@ -5,11 +5,10 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-Nothing in progress. Phase 5 is next.
+Nothing in progress. Phase 6 is next.
 
 ## Next
 
-- [ ] Phase 5. Full-code starter
 - [ ] Phase 6. Guided notebook and exercise 3 wording tests
 - [ ] Phase 7. README with Open in Colab links
 
@@ -32,6 +31,9 @@ Nothing in progress. Phase 5 is next.
       with a credit limit, and `extra_body` provider routing (`order`,
       `allow_fallbacks`) pins the upstream provider
 - [ ] Form cells render collapsed
+- [ ] Full-code starter runs with Run all in a fresh runtime, the hint
+      `<details>` blocks render, and the task 2 and 3 test cells print
+      "Not yet" on the untouched starter
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
 - [ ] A handful of simultaneous sessions on the workshop key, watching the
@@ -58,6 +60,7 @@ Nothing in progress. Phase 5 is next.
       key), `results/bakeoff-cost-sample.csv` (cost, now in docs/SPEC.md)
 - [x] Phase 4. `build.py`, the demo notebook, and OFFLINE mode, see D-010
       (PR #7)
+- [x] Phase 5. Full-code starter notebook and its tests, see D-011
 
 ## Phase 4 notes from the bake-off
 

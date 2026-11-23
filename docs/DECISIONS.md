@@ -200,3 +200,26 @@ The model still needs a key and a network. Saved responses cover only the
 recorded queries, so most questions get a "could not be reached" message.
 `MODEL` lives in `core/client.py` so the smoke test can use it before the
 agent cell runs.
+
+## D-011: The starter has its own search, loop, and result list (2026-11-23)
+
+Context. The full-code starter has to lack error handling, a step cap, and
+token logging, since those are the student tasks. `core/tools.py` retries and
+returns messages on failure, and `core/tracer.py` records tokens.
+
+Decision. `notebooks_src/fullcode.py` writes its own short `search_arxiv`
+and `run_agent`. The loop appends each tool result to a plain list, and the
+shared citation check reads that list, so the starter needs no `Tracer`. The
+citation check cell defines `_normalize_id` itself, because the core copy
+lives in `core/tools.py`. The test cells for tasks 2 and 3 patch
+`requests.get` and the client, so they need no network or key.
+
+Why. Pulling in the core versions would hand students the answers. The
+starter keeps the 3 second arXiv delay because that rule applies to every
+code path.
+
+Consequences. A change to the core loop does not reach the starter, and
+`build.py --check` does not notice. `tests/test_fullcode.py` fails if the
+starter's loop gains a step cap, a try block, or token fields. The first
+task cell can still end a Run all early if a model calls a tool the student
+has not written yet, since the bare loop has no error handling.
