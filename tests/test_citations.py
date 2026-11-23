@@ -121,3 +121,27 @@ def test_quoted_fragment_and_id_count_once():
 def test_quoted_fragment_of_no_retrieved_title_is_unverified():
     report = check_citations('See "Attention Is Not Enough Here".', RESULTS)
     assert report.unverified == ["Attention Is Not Enough Here"]
+
+
+QUANT = {
+    "name": "get_abstract",
+    "result": {"id": "quant-ph/0602157", "title": "Quantum Codes", "abstract": "..."},
+}
+
+
+def test_unicode_hyphen_in_an_old_style_id_is_verified():
+    for dash in ("‐", "‑", "–"):
+        answer = f"See arXiv:quant{dash}ph/0602157 for the code."
+        report = check_citations(answer, [QUANT])
+        assert report.verified == ["quant-ph/0602157"], dash
+        assert report.unverified == [], dash
+
+
+def test_unicode_hyphen_id_not_retrieved_is_unverified_whole():
+    report = check_citations("See quant‑ph/0602157.", RESULTS)
+    assert report.unverified == ["quant-ph/0602157"]
+
+
+def test_dash_between_years_is_left_alone():
+    report = check_citations("Between 2020–2023 see 1706.03762.", RESULTS)
+    assert report.verified == ["1706.03762"] and report.unverified == []

@@ -40,6 +40,18 @@ QUESTIONS = [
         True,
     ),
     Question(
+        "backup_gnn",
+        "Find a few papers on graph neural networks and explain in plain "
+        "language what one of them does.",
+        True,
+    ),
+    Question(
+        "backup_weather",
+        "Find a few papers on machine learning for weather forecasting and "
+        "explain in plain language what one of them does.",
+        True,
+    ),
+    Question(
         "guided_physics",
         "What is quantum error correction and what are a few key papers on it?",
         True,
