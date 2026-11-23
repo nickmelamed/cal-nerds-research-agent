@@ -58,7 +58,11 @@ FAILURE_PREFIXES = (
     "The tool arguments were not valid JSON",
     "The arguments did not match",
 )
-ENDED_EARLY_PREFIXES = ("Stopped after", "The model could not format")
+ENDED_EARLY_PREFIXES = (
+    "Stopped after",
+    "The model could not format",
+    "The model returned an empty",
+)
 
 
 def tool_sequence(tool_results: list[dict]) -> str:

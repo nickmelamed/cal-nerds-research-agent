@@ -244,3 +244,19 @@ def test_cost_is_read_from_usage_when_reported():
 
     _, result = run([reply("hi")])
     assert result.tracer.summary()["cost"] == 0
+
+
+def test_empty_reply_is_retried_once_with_a_nudge():
+    fake, result = run([reply(""), reply("real answer")])
+    assert result.answer == "real answer"
+    assert "empty" in fake.requests[1][-1]["content"].lower()
+
+
+def test_second_empty_reply_ends_with_a_message():
+    _, result = run([reply(""), reply("")])
+    assert result.answer == agent.EMPTY_ANSWER
+
+
+def test_empty_reply_on_the_last_step_ends_with_a_message():
+    _, result = run([reply("")], max_steps=1)
+    assert result.answer == agent.EMPTY_ANSWER

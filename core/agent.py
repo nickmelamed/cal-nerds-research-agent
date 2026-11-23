@@ -13,6 +13,8 @@ MODEL = "openai/gpt-oss-120b"
 MAX_STEPS = 6
 RESULT_CHARS = 2000
 TRUNCATION_MARK = " [truncated]"
+EMPTY_ANSWER = "The model returned an empty answer."
+EMPTY_NUDGE = "Your last reply was empty. Answer the question now."
 FINAL_STEP_NOTE = (
     "You have no tool calls left. Answer now using only what the tools "
     "returned, and cite only papers they returned."
@@ -81,6 +83,7 @@ def run_agent(
         {"role": "user", "content": question},
     ]
     retried_tool_error = False
+    retried_empty = False
 
     for step in range(1, max_steps + 1):
         start = time.monotonic()
@@ -130,6 +133,13 @@ def run_agent(
         message = response.choices[0].message
         if not message.tool_calls:
             text = message.content or ""
+            if not text.strip():
+                if not retried_empty and step < max_steps:
+                    retried_empty = True
+                    tracer.note(f"Step {step}: the model sent an empty reply, asking again")
+                    messages.append({"role": "user", "content": EMPTY_NUDGE})
+                    continue
+                text = EMPTY_ANSWER
             tracer.answer(text)
             return AgentResult(text, step, tracer)
 
