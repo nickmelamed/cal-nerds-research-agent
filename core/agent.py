@@ -10,9 +10,15 @@ from core.client import chat
 from core.tracer import Tracer
 
 MODEL = "openai/gpt-oss-120b"
-MAX_STEPS = 8
+MAX_STEPS = 6
 RESULT_CHARS = 2000
 TRUNCATION_MARK = " [truncated]"
+EMPTY_ANSWER = "The model returned an empty answer."
+EMPTY_NUDGE = "Your last reply was empty. Answer the question now."
+FINAL_STEP_NOTE = (
+    "You have no tool calls left. Answer now using only what the tools "
+    "returned, and cite only papers they returned."
+)
 
 TOOL_FUNCTIONS = {
     "search_arxiv": tools.search_arxiv,
@@ -63,10 +69,11 @@ def run_agent(
     max_steps: int = MAX_STEPS,
     tracer: Tracer | None = None,
     model: str = MODEL,
+    extra_body: dict | None = None,
 ) -> AgentResult:
     """Run the agent until it answers or reaches ``max_steps`` model calls.
 
-    Clears the tool caches first. A Groq ``tool_use_failed`` error is sent
+    Clears the tool caches first. A ``tool_use_failed`` error is sent
     back to the model once, and a second one ends the run with a message.
     """
     tracer = tracer or Tracer()
@@ -76,11 +83,22 @@ def run_agent(
         {"role": "user", "content": question},
     ]
     retried_tool_error = False
+    retried_empty = False
 
     for step in range(1, max_steps + 1):
         start = time.monotonic()
         try:
-            response = chat(client, model=model, messages=messages, tools=tool_schemas)
+            # The last call has tools off so a run that keeps searching still
+            # ends with an answer built from what it already retrieved.
+            last = step == max_steps and max_steps > 1
+            response = chat(
+                client,
+                model=model,
+                messages=messages + [{"role": "user", "content": FINAL_STEP_NOTE}] * last,
+                tools=tool_schemas,
+                extra_body=extra_body,
+                **({"tool_choice": "none"} if last else {}),
+            )
         except Exception as error:
             if "tool_use_failed" not in str(error):
                 raise
@@ -100,12 +118,28 @@ def run_agent(
             continue
 
         usage = getattr(response, "usage", None)
-        tokens = getattr(usage, "total_tokens", 0) or 0
-        tracer.model_call(step, tokens, time.monotonic() - start)
+        tracer.model_call(
+            step,
+            _count(usage, "total_tokens"),
+            time.monotonic() - start,
+            prompt=_count(usage, "prompt_tokens"),
+            completion=_count(usage, "completion_tokens"),
+            cached=_count(getattr(usage, "prompt_tokens_details", None), "cached_tokens"),
+            reasoning=_count(getattr(usage, "completion_tokens_details", None), "reasoning_tokens"),
+            served_by=_served_by(response),
+            cost=_cost(usage),
+        )
 
         message = response.choices[0].message
         if not message.tool_calls:
             text = message.content or ""
+            if not text.strip():
+                if not retried_empty and step < max_steps:
+                    retried_empty = True
+                    tracer.note(f"Step {step}: the model sent an empty reply, asking again")
+                    messages.append({"role": "user", "content": EMPTY_NUDGE})
+                    continue
+                text = EMPTY_ANSWER
             tracer.answer(text)
             return AgentResult(text, step, tracer)
 
@@ -140,6 +174,25 @@ def run_agent(
     text = f"Stopped after {max_steps} steps without a final answer."
     tracer.answer(text)
     return AgentResult(text, max_steps, tracer)
+
+
+def _cost(usage) -> float:
+    value = getattr(usage, "cost", None)
+    if value is None:
+        value = (getattr(usage, "model_extra", None) or {}).get("cost")
+    return float(value) if isinstance(value, (int, float)) else 0.0
+
+
+def _served_by(response) -> str:
+    name = getattr(response, "provider", None)
+    if name is None:
+        name = (getattr(response, "model_extra", None) or {}).get("provider")
+    return name if isinstance(name, str) else ""
+
+
+def _count(obj, name: str) -> int:
+    value = getattr(obj, name, 0)
+    return value if isinstance(value, int) else 0
 
 
 def _parsed_args(call) -> dict:

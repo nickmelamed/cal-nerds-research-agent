@@ -5,8 +5,9 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 3. Model bake-off (gpt-oss-120b, gpt-oss-20b, qwen3.8-27b),
-      including tokens per run and whether cached tokens count toward TPM
+- [ ] Phase 3. Done except the pull request. Results: `results/bakeoff-six-steps.csv`
+      (tokens and citations), `results/bakeoff-groq-baseline.csv` (free Groq key),
+      `results/bakeoff-cost-sample.csv` (cost, now in docs/SPEC.md).
 
 ## Next
 
@@ -21,19 +22,25 @@ phase. CLAUDE.md stays stable and does not track status.
       account, once with the workshop key and once with a free key
 - [ ] Colab Secrets and the `getpass` fallback both work (`get_api_key` in
       `core/client.py`)
-- [ ] 429 retry message and `remaining_tokens()` against the real Groq SDK
-      headers
-- [ ] `run_agent` against the real Groq SDK. Check the `tool_use_failed`
-      error text and that `usage.total_tokens` is set
+- [ ] 429 retry message, the OpenRouter credit helper, and the Groq
+      remaining-tokens helper against the real OpenAI SDK on both providers
+- [ ] Usage fields from the real OpenAI SDK on both providers: `prompt_tokens`,
+      `completion_tokens`, `prompt_tokens_details.cached_tokens`, and
+      `completion_tokens_details.reasoning_tokens`. Missing fields read as 0
+- [ ] `run_agent` against the real OpenAI SDK on both providers. Check the
+      `tool_use_failed` error text and that `usage.total_tokens` is set
+- [ ] OpenRouter `GET /api/v1/key` returns `data.limit_remaining` for a key
+      with a credit limit, and `extra_body` provider routing (`order`,
+      `allow_fallbacks`) pins the upstream provider
 - [ ] Form cells render collapsed
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
 - [ ] A handful of simultaneous sessions on the workshop key, watching the
-      remaining-tokens header
+      remaining OpenRouter credit
 
 ## Workshop logistics (Nick)
 
-- [ ] Dedicated workshop key, spend limit around $50, budget alerts
+- [ ] Dedicated OpenRouter workshop key with a credit limit
 - [ ] Links in slides, pre-workshop email (own key optional), and wrap-up
       slide (how to get a free key)
 - [ ] Revoke the workshop key after the workshop
@@ -43,15 +50,45 @@ phase. CLAUDE.md stays stable and does not track status.
 - [x] Phase 1. Core tools (`search_arxiv`, `get_abstract`, `lookup_wikipedia`)
       with fixtures, fast tests, and live tests (PR #1)
 - [x] Phase 1. Client wrapper with 429 handling and rate limit header reader
-      (PR #1)
+      (PR #1). Now covers both OpenRouter and Groq, see D-008
 - [x] Phase 2. Tool schemas, agent loop, tracer, and citation check, with
       mocked-Groq tests (PR #3)
+
+## Phase 4 notes from the bake-off
+
+- Use `MAX_STEPS = 6` and the forced last step from `core/agent.py`. Without
+  them, runs averaged more than 8k tokens (`results/bakeoff-final-loop.csv`).
+- Start from the system prompt in `bakeoff/questions.py`. The search limit
+  and the "no years in a query" line are what stopped the search loops.
+- The demo candidates are `demo_open` and `backup_weather`. The original
+  named-systems question (AlphaFold, RoseTTAFold) never finished in
+  `results/bakeoff-diagnose3.csv`, because those papers are not on arXiv.
+- The citation check passes an answer whose claims come from the model's own
+  knowledge, as long as the cited ids were retrieved. Say so in the demo
+  script.
+
+## Phase 5 notes from the bake-off
+
+- The full-code starter keeps its own bare loop. It must not get the forced
+  last step, the empty-reply retry, or the `extra_body` argument, since the
+  step cap and error handling are student tasks.
+
+## Phase 6 notes from the bake-off
+
+- Exercise 2 lets students pick a question. A question that asks for
+  "recent" papers sent the agent into repeated searches with years in the
+  query, because arXiv search cannot filter by date. Warn students or word
+  the example questions without "recent".
+- Questions that name a famous system whose paper is not on arXiv have the
+  same effect.
+- The guided questions in `bakeoff/questions.py` are placeholders.
 
 ## Phase 3 handoff notes
 
 Starting point for planning the bake-off in a separate conversation. The
 approach below is a proposal, not an agreed plan. Read "Model selection" and
-"Groq setup and capacity" in docs/SPEC.md first.
+"Providers and capacity" in docs/SPEC.md first. These handoff notes
+predate D-008 and describe the old Groq model comparison.
 
 What phase 2 leaves in place.
 

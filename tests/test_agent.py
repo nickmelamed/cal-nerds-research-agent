@@ -146,3 +146,117 @@ def test_long_tool_result_is_marked_truncated(monkeypatch):
     assert content.endswith(agent.TRUNCATION_MARK)
     assert len(content) == agent.RESULT_CHARS + len(agent.TRUNCATION_MARK)
     assert result.tracer.tool_results[0]["result"] == "x" * 5000
+
+
+def test_usage_details_are_recorded():
+    usage = NS(
+        total_tokens=100,
+        prompt_tokens=80,
+        completion_tokens=20,
+        prompt_tokens_details=NS(cached_tokens=60),
+        completion_tokens_details=NS(reasoning_tokens=7),
+    )
+    response = NS(choices=[NS(message=NS(content="hi", tool_calls=None))], usage=usage)
+    _, result = run([response])
+    summary = result.tracer.summary()
+    assert (summary["prompt_tokens"], summary["completion_tokens"]) == (80, 20)
+    assert (summary["cached_tokens"], summary["reasoning_tokens"]) == (60, 7)
+
+
+def test_missing_usage_details_count_as_zero():
+    _, result = run([reply("hi")])
+    summary = result.tracer.summary()
+    assert summary["tokens"] == 100
+    assert summary["cached_tokens"] == 0 and summary["reasoning_tokens"] == 0
+
+
+def test_extra_body_reaches_the_client():
+    seen = {}
+
+    class Spy(FakeClient):
+        def create(self, **kwargs):
+            seen.update(kwargs)
+            return super().create(**kwargs)
+
+    body = {"provider": {"order": ["X"]}}
+    agent.run_agent(Spy([reply("hi")]), "q", "sys", TOOLS, extra_body=body)
+    assert seen["extra_body"] == body
+
+
+class Spy(FakeClient):
+    def __init__(self, outcomes):
+        super().__init__(outcomes)
+        self.kwargs = []
+
+    def create(self, **kwargs):
+        self.kwargs.append({k: v for k, v in kwargs.items() if k != "messages"})
+        return super().create(**kwargs)
+
+
+def test_last_step_turns_tools_off_and_asks_for_an_answer(monkeypatch):
+    monkeypatch.setitem(agent.TOOL_FUNCTIONS, "search_arxiv", lambda query: [])
+    calls = [tool_call("search_arxiv", {"query": "x"})]
+    spy = Spy([reply(calls=calls), reply("final answer")])
+    result = agent.run_agent(spy, "q", "sys", TOOLS, max_steps=2)
+    assert result.answer == "final answer"
+    assert "tool_choice" not in spy.kwargs[0]
+    assert spy.kwargs[1]["tool_choice"] == "none"
+    assert "answer now" in spy.requests[1][-1]["content"].lower()
+
+
+def test_earlier_steps_keep_tools_on():
+    spy = Spy([reply("done")])
+    agent.run_agent(spy, "q", "sys", TOOLS, max_steps=3)
+    assert "tool_choice" not in spy.kwargs[0]
+
+
+def test_single_step_runs_still_get_tools():
+    spy = Spy([reply("done")])
+    agent.run_agent(spy, "q", "sys", TOOLS, max_steps=1)
+    assert "tool_choice" not in spy.kwargs[0]
+
+
+def test_served_by_is_read_from_the_response_body():
+    plain = reply("hi")
+    plain.provider = "Baseten"
+    _, result = run([plain])
+    assert result.tracer.summary()["served_by"] == "Baseten"
+
+    extra = reply("hi")
+    extra.model_extra = {"provider": "Crusoe"}
+    _, result = run([extra])
+    assert result.tracer.summary()["served_by"] == "Crusoe"
+
+    _, result = run([reply("hi")])
+    assert result.tracer.summary()["served_by"] == ""
+
+
+def test_cost_is_read_from_usage_when_reported():
+    response = reply("hi")
+    response.usage.cost = 0.0123
+    _, result = run([response])
+    assert result.tracer.summary()["cost"] == 0.0123
+
+    extra = reply("hi")
+    extra.usage.model_extra = {"cost": 0.5}
+    _, result = run([extra])
+    assert result.tracer.summary()["cost"] == 0.5
+
+    _, result = run([reply("hi")])
+    assert result.tracer.summary()["cost"] == 0
+
+
+def test_empty_reply_is_retried_once_with_a_nudge():
+    fake, result = run([reply(""), reply("real answer")])
+    assert result.answer == "real answer"
+    assert "empty" in fake.requests[1][-1]["content"].lower()
+
+
+def test_second_empty_reply_ends_with_a_message():
+    _, result = run([reply(""), reply("")])
+    assert result.answer == agent.EMPTY_ANSWER
+
+
+def test_empty_reply_on_the_last_step_ends_with_a_message():
+    _, result = run([reply("")], max_steps=1)
+    assert result.answer == agent.EMPTY_ANSWER

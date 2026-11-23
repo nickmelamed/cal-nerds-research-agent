@@ -121,3 +121,61 @@ def test_quoted_fragment_and_id_count_once():
 def test_quoted_fragment_of_no_retrieved_title_is_unverified():
     report = check_citations('See "Attention Is Not Enough Here".', RESULTS)
     assert report.unverified == ["Attention Is Not Enough Here"]
+
+
+QUANT = {
+    "name": "get_abstract",
+    "result": {"id": "quant-ph/0602157", "title": "Quantum Codes", "abstract": "..."},
+}
+
+
+def test_unicode_hyphen_in_an_old_style_id_is_verified():
+    for dash in ("‐", "‑", "–"):
+        answer = f"See arXiv:quant{dash}ph/0602157 for the code."
+        report = check_citations(answer, [QUANT])
+        assert report.verified == ["quant-ph/0602157"], dash
+        assert report.unverified == [], dash
+
+
+def test_unicode_hyphen_id_not_retrieved_is_unverified_whole():
+    report = check_citations("See quant‑ph/0602157.", RESULTS)
+    assert report.unverified == ["quant-ph/0602157"]
+
+
+def test_dash_between_years_is_left_alone():
+    report = check_citations("Between 2020–2023 see 1706.03762.", RESULTS)
+    assert report.verified == ["1706.03762"] and report.unverified == []
+
+
+def test_quoted_example_with_arrows_is_not_a_citation():
+    answer = (
+        'Think of "user \u2192 purchases \u2192 item \u2192 belongs-to \u2192 category" as a path.'
+    )
+    report = check_citations(answer, RESULTS)
+    assert report.unverified == []
+
+
+def test_quoted_lowercase_phrase_is_not_a_citation():
+    report = check_citations('It learns "to accumulate evidence from every sample".', RESULTS)
+    assert report.unverified == []
+
+
+def test_quoted_sentence_ending_in_a_period_is_not_a_citation():
+    report = check_citations('The abstract says "We study a new kind of model."', RESULTS)
+    assert report.unverified == []
+
+
+def test_made_up_quoted_title_is_still_unverified():
+    report = check_citations('See "Quantum Spin Glasses In Deep Networks" for more.', RESULTS)
+    assert report.unverified == ["Quantum Spin Glasses In Deep Networks"]
+
+
+def test_quoted_title_with_unicode_hyphen_still_matches_retrieved_title():
+    results = [
+        {
+            "name": "search_arxiv",
+            "result": [{"id": "1", "title": "MUST-CNN: A Deep Shift-and-Stitch Net"}],
+        }
+    ]
+    report = check_citations('See "MUST\u2011CNN: A Deep Shift\u2011and\u2011Stitch Net".', results)
+    assert report.verified == ["1"] and report.unverified == []

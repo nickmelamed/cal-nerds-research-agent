@@ -8,7 +8,7 @@ paths:
 # Python
 
 - Code in `core/` ends up in notebooks that run on Colab. Use only the
-  standard library, `requests`, and `groq` there, and avoid syntax newer
+  standard library, `requests`, and `openai` there, and avoid syntax newer
   than the Python version Colab currently ships.
 - Type hints on public functions. Docstrings follow writing-style.md.
 - Tools return short strings or small JSON-serializable dicts that the model

@@ -1,58 +1,50 @@
 # Cal NERDS AI 101: Notebook Build Plan
 
-Builds on docs/workshop-context.md, which covers the workshop schedule, the agent, and the two build tracks. Where the two differ, this document wins. Three notebooks for the Build an Agent segment, all in Colab, all on Groq, all built around the research paper assistant.
+Builds on docs/workshop-context.md, which covers the workshop schedule, the agent, and the two build tracks. Where the two differ, this document wins. Three notebooks for the Build an Agent segment, all in Colab, all built around the research paper assistant.
 
 ## Guiding decisions
 
 **One source of truth.** The finished demo notebook is built first and everything else is derived from it. The tool functions, tool schemas, agent loop and trace printer live in one place (`core/`) and a small build script copies them into each notebook. Fixing a bug once fixes it everywhere.
 
-**Every notebook is self-contained.** No `pip install` of our own package and no fetching code from GitHub at runtime. If a student opens the link, every cell they need is in the notebook. Only third-party install is `groq`.
+**Every notebook is self-contained.** No `pip install` of our own package and no fetching code from GitHub at runtime. If a student opens the link, every cell they need is in the notebook. Only third-party install is `openai`.
 
 **Plain HTTP for the tools.** arXiv via its Atom API with `requests` and `xml.etree`, Wikipedia via its REST summary endpoint. No `arxiv` or `wikipedia` packages, so the full-code track can read exactly what each tool does.
 
-**Paid workshop key by default, own key optional.** Nick pays for a Groq Developer plan key used only for the workshop. The setup cell uses it by default and lets any student paste their own free key instead (Colab Secrets `GROQ_API_KEY` first, then a `getpass` prompt). This replaces the earlier plan of every student creating a Groq account before the workshop. Details under Groq setup below.
+**OpenRouter workshop key by default, own Groq key optional.** Nick pays for an OpenRouter key used only for the workshop. The setup cell uses a student's own Groq key if `GROQ_API_KEY` is set in Colab Secrets, and otherwise the workshop key. Details under Providers and capacity below.
 
-**Same setup cell in all three.** Key selection as above, model assignment, then a smoke-test call that prints a clear pass or fail. Keys never get pasted into a cell that gets shared, other than the workshop key, which is revoked after the workshop.
+**Same setup cell in all three.** Key and provider selection as above, then a smoke-test call that prints a clear pass or fail. Keys never get pasted into a cell that gets shared, other than the workshop key, which is revoked after the workshop.
 
 **Citation check in every notebook.** Runs automatically after each agent answer in the demo and guided notebooks. In the full-code starter it runs too, and writing an improved version is a stretch task.
 
-## Groq setup and capacity
+## Providers and capacity
 
 Build for about 60 students.
 
-### Limits (Developer plan, from Groq docs)
+### Providers
 
-| Model | RPM | RPD | TPM | TPD |
-|---|---|---|---|---|
-| openai/gpt-oss-120b | 1K | 500K | 250K | none |
-| openai/gpt-oss-20b | 1K | 500K | 250K | none |
-| qwen/qwen3.8-27b | 1K | 500K | 250K | none |
+The default is OpenRouter with a paid key Nick controls, set to gpt-oss-120b. The optional provider is Groq with a student's own free key. Both expose the OpenAI-compatible chat completions API, so notebooks use the `openai` package with a base URL setting.
 
-Limits apply per organization and per model. Every student on the workshop key shares one pool per model, and making extra keys doesn't add capacity. Llama 3.3 70B isn't on the Developer list, so the candidates are the three models above.
+Free Groq limits for gpt-oss-120b are 30 RPM, 1K RPD, 8K TPM and 200K TPD per account. A run can pause on 429s, which is acceptable for a fallback.
 
-### The math
+OpenRouter does not enforce rate limits on paid models, but the upstream providers can throttle or go down. Pin gpt-oss-120b to the provider with the most reliable tool calling in the bake-off, with one fallback, using OpenRouter's provider routing settings.
 
-Tokens per minute is the only limit that matters. At about 12k tokens per agent run, one model's 250K TPM covers roughly 20 runs a minute for the whole room. 60 students running once every two minutes is about 30 runs and 360K tokens a minute, before `compare()` doubles it. One key on one model isn't enough.
+### Keys and setup cell
 
-### How we fit
+`OPENROUTER_API_KEY` holds the workshop key. Nick adds it to student copies by hand. `GROQ_API_KEY` is a student's own key. If it is set in Colab Secrets the setup cell uses Groq, otherwise the workshop OpenRouter key. If neither works, it prompts with `getpass`. The smoke test prints which provider and model are in use.
 
-1. **Split across two models.** Demo on gpt-oss-120b. Students split between gpt-oss-120b and gpt-oss-20b, assigned automatically in the setup cell (for example by a hash of the session), giving 500K TPM combined. Depends on 20b passing the tool-calling bar in the model bake-off. If it fails, qwen3.8-27b is the second pool.
-2. **Cut tokens per run to about 6–8k.** 3 search results instead of 5, abstracts truncated to about 150 words, short tool schemas, Wikipedia summaries cut to 2 or 3 sentences. Measured in the bake-off.
-3. **Rate limit handling.** On a 429 the client reads `retry-after`, waits, and prints "The shared key is busy, retrying in 2s" instead of an error. A helper reads `x-ratelimit-remaining-tokens` from response headers so Nick can see how close the room is to the cap.
-4. **Own keys take load off.** Every student who pastes their own free key leaves the shared pool.
+429 handling stays in the client wrapper. It reads `retry-after` when present and backs off otherwise, since the providers send different headers. The remaining-tokens helper is Groq-only. For OpenRouter a helper calls `GET https://openrouter.ai/api/v1/key` so Nick can watch remaining credit.
 
-Target is 60–80 runs a minute across the room, about one run per student per minute.
+### Token budget
 
-**To verify.** Whether cached input tokens count against TPM on Groq. Every call in a run resends the same system prompt and tool schemas, so if cached tokens are exempt the real headroom is noticeably larger.
+Keep each run near 6 to 8k tokens, so a run fits the 8K TPM of a free Groq key and stays cheap and fast. The 6 step cap and forced last answer in D-009 brought the mean to 6,233 (`results/bakeoff-six-steps.csv`). Cuts: 3 search results instead of 5, abstracts truncated to about 150 words, short tool schemas, Wikipedia summaries cut to 2 or 3 sentences.
 
 ### Cost
 
-Roughly 30 runs per student at 6–15k tokens each comes to about 10–27M input and 2–4M output tokens. At third-party-reported gpt-oss-120b prices ($0.15 in, $0.60 out per million) that's under $10, less for any share on 20b. Confirm current prices on groq.com/pricing during the bake-off.
+Measured at about $0.0015 per agent run on OpenRouter with default routing (20 runs, range $0.0006 to $0.0029), from `results/bakeoff-cost-sample.csv`. Sixty students at about 30 runs each come to roughly $3, and about $5 if every run cost as much as the most expensive one measured. Set the key's credit limit with margin above that. Price depends on which upstream provider serves a call, and each bake-off row records it in `served_by`.
 
 ### Key safety
 
-- Create a dedicated key just for the workshop
-- Set a spend limit on the Groq account (around $50) with budget alerts
+- Create a dedicated OpenRouter key with a credit limit, such as $10 to $15
 - Revoke the key right after the workshop, since it will end up in shared copies of notebooks
 
 ### Student messaging
@@ -74,7 +66,7 @@ The `OFFLINE` flag ships in all three notebooks with cached results for the prov
 | `get_abstract(paper_id)` | Fetches by `id_list`, truncated to about 150 words. Reuses a per-run cache so it doesn't re-hit arXiv for papers the search already returned |
 | `lookup_wikipedia(term)` | REST summary endpoint with a proper User-Agent. Falls back to Wikipedia search when the exact title misses. Truncates to 2 or 3 sentences |
 | `TOOLS` schemas | Short JSON schemas with descriptions in their own cell so the guided track can edit text without touching code |
-| `run_agent(question, system_prompt, tools, max_steps)` | The decide, call tool, read result, repeat loop. Handles Groq's `tool_use_failed` errors by feeding the error back to the model once before giving up. Handles 429s with `retry-after` |
+| `run_agent(question, system_prompt, tools, max_steps)` | The decide, call tool, read result, repeat loop. Handles `tool_use_failed` errors by feeding the error back to the model once before giving up. Handles 429s with `retry-after` when present |
 | `Tracer` | Prints each step readably. Step number, the model's tool choice and arguments, a truncated result, final answer. Also collects tokens and latency per call |
 | `check_citations(answer, trace)` | Pulls every arXiv ID or title out of the final answer and confirms each was actually returned by a tool during this run |
 
@@ -91,7 +83,7 @@ The citation check is the payoff for the hallucination demo earlier in the day. 
 7. Optional cell for the chatbot comparison talking points (web search off vs. on)
 
 Extras for robustness
-- Keep a copy of the notebook with saved outputs from a good run. If Groq or arXiv misbehaves live, switch tabs and narrate the saved trace.
+- Keep a copy of the notebook with saved outputs from a good run. If the model provider or arXiv misbehaves live, switch tabs and narrate the saved trace.
 - `OFFLINE = False` flag that swaps arXiv and Wikipedia calls for a small cached JSON of real results for the demo questions.
 - Run the live demo before students start building, so the shared pool is empty.
 
@@ -130,15 +122,16 @@ Each task gets a collapsed hint cell. Full solutions live in the demo notebook, 
 
 ## Model selection
 
-Candidates are gpt-oss-120b, gpt-oss-20b and qwen3.8-27b. For each, run the demo question and the guided exercises about 20 times and record
+The model is gpt-oss-120b. The bake-off compares the OpenRouter providers that serve it, plus one baseline run on a free Groq key. For each, run the demo question and the guided exercises about 10 to 20 times and record
 
 - tool call success rate (valid JSON, real tool names)
 - whether it uses more than one tool when it should
 - citation check pass rate
 - tokens per run after the trimming above, to confirm the 6–8k target
 - latency per run
+- price per run
 
-Top priority is whether gpt-oss-20b is reliable enough to be the second student pool. Also confirm current per-token prices and whether cached tokens count toward TPM.
+The result is one pinned provider and one fallback for OpenRouter's provider routing settings. gpt-oss-20b and qwen3.8-27b are optional extras. Also confirm current gpt-oss-120b pricing for the pinned provider.
 
 ## Repo
 
@@ -166,12 +159,12 @@ Open in Colab links follow the pattern `colab.research.google.com/github/nickmel
 No fixed deadline.
 
 1. Core tools with fast tests on fixtures and a few live tests against arXiv and Wikipedia
-2. Model bake-off, including tokens per run and the cached-token question
+2. Provider bake-off for gpt-oss-120b on OpenRouter plus a free Groq baseline, including tokens per run
 3. Demo notebook, including the citation check and offline fallback
 4. Full-code starter, derived by removing pieces from the demo
 5. Guided notebook, then test exercise 3 wordings
 6. Dry run of all three in Colab on a fresh Google account, once with the workshop key and once with a fresh free key, timed against the 45 minute build block
-7. Load check. A handful of simultaneous Colab sessions on the workshop key, watching the remaining-tokens header
-8. Workshop key setup. Dedicated key, spend limit and alerts on the account
+7. Load check. A handful of simultaneous Colab sessions on the workshop key, watching remaining OpenRouter credit
+8. Workshop key setup. Dedicated OpenRouter key with a credit limit
 9. Final links into the slides, the pre-workshop email (own key optional) and the wrap-up slide (how to get a free key)
 10. After the workshop, revoke the key

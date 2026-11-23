@@ -88,5 +88,78 @@ def test_key_from_env_is_not_printed(monkeypatch, capsys):
 
 def test_prompts_when_no_env_or_secrets(monkeypatch):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.setattr(client, "getpass", lambda prompt: "typed")
     assert client.get_api_key() == "typed"
+
+
+@pytest.fixture
+def no_keys(monkeypatch):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+
+
+def test_student_groq_key_wins_over_workshop_key(monkeypatch, no_keys):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "workshop")
+    monkeypatch.setenv("GROQ_API_KEY", "student")
+    assert client.choose_provider() == "groq"
+    assert client.get_api_key() == "student"
+
+
+def test_workshop_key_is_the_default(monkeypatch, no_keys):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "workshop")
+    assert client.choose_provider() == "openrouter"
+    assert client.get_api_key() == "workshop"
+
+
+def test_make_client_sets_base_url_and_provider(monkeypatch, no_keys):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "workshop")
+    made = client.make_client()
+    assert str(made.base_url).startswith(client.BASE_URLS["openrouter"])
+    assert client.active_provider() == "openrouter"
+
+
+def test_typed_groq_key_switches_to_groq(monkeypatch, no_keys):
+    monkeypatch.setattr(client, "getpass", lambda prompt: "gsk_" + "y" * 8)
+    made = client.make_client()
+    assert str(made.base_url).startswith(client.BASE_URLS["groq"])
+    assert client.active_provider() == "groq"
+
+
+def test_backoff_grows_without_retry_after(sleeps):
+    fake = FakeClient([Err(429), Err(429), Raw()])
+    client.chat(fake)
+    assert sleeps == [client.DEFAULT_WAIT_S, client.DEFAULT_WAIT_S * 2]
+
+
+class FakeReply:
+    def __init__(self, payload, ok=True):
+        self.payload, self.ok = payload, ok
+
+    def raise_for_status(self):
+        if not self.ok:
+            raise RuntimeError("bad status")
+
+    def json(self):
+        return self.payload
+
+
+def test_openrouter_credit_reads_limit_remaining(monkeypatch):
+    seen = {}
+
+    def fake_get(url, headers, timeout):
+        seen["url"], seen["auth"] = url, headers["Authorization"]
+        return FakeReply({"data": {"limit_remaining": 12.5}})
+
+    monkeypatch.setattr(client.requests, "get", fake_get)
+    assert client.openrouter_credit("k") == 12.5
+    assert seen == {"url": client.OPENROUTER_KEY_URL, "auth": "Bearer k"}
+
+
+def test_openrouter_credit_is_none_without_limit_or_on_failure(monkeypatch):
+    monkeypatch.setattr(
+        client.requests, "get", lambda *a, **k: FakeReply({"data": {"limit_remaining": None}})
+    )
+    assert client.openrouter_credit("k") is None
+    monkeypatch.setattr(client.requests, "get", lambda *a, **k: FakeReply({}, ok=False))
+    assert client.openrouter_credit("k") is None

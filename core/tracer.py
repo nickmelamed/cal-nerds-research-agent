@@ -18,13 +18,42 @@ class Tracer:
         if self.verbose:
             print(text)
 
-    def model_call(self, step: int, tokens: int, seconds: float) -> None:
-        """Record the tokens and latency of one model call."""
-        self.calls.append({"step": step, "tokens": tokens, "seconds": seconds})
+    def model_call(
+        self,
+        step: int,
+        tokens: int,
+        seconds: float,
+        prompt: int = 0,
+        completion: int = 0,
+        cached: int = 0,
+        reasoning: int = 0,
+        served_by: str = "",
+        cost: float = 0.0,
+    ) -> None:
+        """Record the token counts and latency of one model call.
+
+        ``cached`` is part of ``prompt`` and ``reasoning`` is part of
+        ``completion``. Both stay 0 when the API does not report them.
+        ``served_by`` is the upstream provider OpenRouter names in its reply and
+        ``cost`` is the dollar cost it reports, when usage accounting is on.
+        """
+        self.calls.append(
+            {
+                "step": step,
+                "tokens": tokens,
+                "seconds": seconds,
+                "prompt": prompt,
+                "completion": completion,
+                "cached": cached,
+                "reasoning": reasoning,
+                "served_by": served_by,
+                "cost": cost,
+            }
+        )
 
     def tool_call(self, step: int, name: str, args: dict, result) -> None:
         """Print one tool call and keep the raw result for the citation check."""
-        self.tool_results.append({"step": step, "name": name, "result": result})
+        self.tool_results.append({"step": step, "name": name, "args": args, "result": result})
         shown = result if isinstance(result, str) else json.dumps(result)
         if len(shown) > DISPLAY_CHARS:
             shown = shown[:DISPLAY_CHARS] + "..."
@@ -46,5 +75,11 @@ class Tracer:
             "model_calls": len(self.calls),
             "tool_calls": len(self.tool_results),
             "tokens": sum(c["tokens"] for c in self.calls),
+            "prompt_tokens": sum(c["prompt"] for c in self.calls),
+            "completion_tokens": sum(c["completion"] for c in self.calls),
+            "cached_tokens": sum(c["cached"] for c in self.calls),
+            "reasoning_tokens": sum(c["reasoning"] for c in self.calls),
+            "cost": round(sum(c["cost"] for c in self.calls), 6),
+            "served_by": " ".join(sorted({c["served_by"] for c in self.calls} - {""})),
             "seconds": round(sum(c["seconds"] for c in self.calls), 2),
         }
