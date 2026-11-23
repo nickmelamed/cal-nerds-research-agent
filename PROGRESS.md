@@ -5,13 +5,10 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 3. OpenRouter bake-off for gpt-oss-120b. The loop, prompt, and
-      6 step cap are settled (D-009, `results/bakeoff-six-steps.csv`). The
-      free Groq baseline ran cleanly on two questions
-      (`results/bakeoff-groq-baseline.csv`). Left: a larger cost sample, since
-      `results/bakeoff-cost-check.csv` has only 2 runs. The provider needs no
-      pin, because each run records `served_by`. Decide whether to run the
-      Groq baseline on all four questions.
+- [ ] Phase 3. Done except the pull request. Results: `results/bakeoff-six-steps.csv`
+      (tokens and citations), `results/bakeoff-groq-baseline.csv` (free Groq key),
+      `results/bakeoff-cost-sample.csv` (cost). The cost figure still needs to
+      go into the Cost section of docs/SPEC.md, which needs Nick's approval.
 
 ## Next
 
