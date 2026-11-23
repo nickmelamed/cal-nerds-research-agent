@@ -5,11 +5,24 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-Nothing in progress. Phase 6 is next.
+Phase 6 is built and waiting on one live run. The guided notebook ships with
+the two exercise 3 wordings from the spec, untested. Nick runs the wording
+test, then the wordings are picked from the numbers and recorded as D-012.
+
+```bash
+.venv/bin/python -m bakeoff.run --providers openrouter:auto \
+  --questions guided_biology \
+  --variant baseline vague_search misleading_search misleading_wikipedia \
+  --runs 10 --out results/bakeoff-ex3.csv
+.venv/bin/python -m bakeoff.summarize results/bakeoff-ex3.csv
+```
+
+That is 40 runs, about 320k tokens at the 8k estimate.
 
 ## Next
 
-- [ ] Phase 6. Guided notebook and exercise 3 wording tests
+- [ ] Phase 6. Exercise 3 wording test run, pick wordings, D-012 (guided notebook
+      and `--variant` mode are done)
 - [ ] Phase 7. README with Open in Colab links
 
 ## Colab checklist (Nick, by hand)
@@ -34,6 +47,9 @@ Nothing in progress. Phase 6 is next.
 - [ ] Full-code starter runs with Run all in a fresh runtime, the hint
       `<details>` blocks render, and the task 2 and 3 test cells print
       "Not yet" on the untouched starter, with Wi-Fi off for task 2
+- [ ] Guided notebook runs with Run all in a fresh runtime, form cells render
+      collapsed, and `compare` finishes well inside the exercise 1 time
+- [ ] Guided notebook with `OFFLINE = True` on the three exercise 2 questions
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
 - [ ] A handful of simultaneous sessions on the workshop key, watching the
