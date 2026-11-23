@@ -112,6 +112,22 @@ def _line(label: str, s: dict) -> str:
     )
 
 
+def variant_report(rows: list[dict]) -> str:
+    """Return how each tool description set changed tool use and citations."""
+    groups = defaultdict(list)
+    for row in rows:
+        groups[row.get("variant") or "baseline"].append(row)
+    lines = [f"{'variant':<24}{'runs':>5}{'search':>8}{'wiki':>8}{'cites':>8}{'steps':>8}"]
+    for variant, group in groups.items():
+        count = len(group)
+        search = _rate(sum("search_arxiv" in r["tools_used"].split() for r in group), count)
+        wiki = _rate(sum("lookup_wikipedia" in r["tools_used"].split() for r in group), count)
+        cites = _rate(sum(r["citation_pass"] == "True" for r in group), count)
+        steps = statistics.fmean(_num(r["steps"]) for r in group)
+        lines.append(f"{variant:<24}{count:>5}{search:>8.0%}{wiki:>8.0%}{cites:>8.0%}{steps:>8.1f}")
+    return "\n".join(lines)
+
+
 def report(rows: list[dict]) -> str:
     """Return the per-provider and per-question tables plus the selection."""
     header = (
@@ -142,6 +158,8 @@ def report(rows: list[dict]) -> str:
         )
     else:
         lines.append("No OpenRouter provider meets the selection rule in bakeoff/PASS_BAR.md.")
+    if len({r.get("variant") or "baseline" for r in rows}) > 1:
+        lines += ["", variant_report(rows)]
     return "\n".join(lines)
 
 

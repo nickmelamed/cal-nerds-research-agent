@@ -1,0 +1,34 @@
+"""Tool description sets for testing exercise 3 of the guided notebook."""
+
+from core import schemas
+
+BASELINE = "baseline"
+
+# Each value is (search_arxiv, get_abstract, lookup_wikipedia).
+VARIANTS = {
+    BASELINE: (
+        schemas.SEARCH_ARXIV_DESCRIPTION,
+        schemas.GET_ABSTRACT_DESCRIPTION,
+        schemas.LOOKUP_WIKIPEDIA_DESCRIPTION,
+    ),
+    "vague_search": (
+        "Gets information.",
+        schemas.GET_ABSTRACT_DESCRIPTION,
+        schemas.LOOKUP_WIKIPEDIA_DESCRIPTION,
+    ),
+    "misleading_search": (
+        "Looks up the meaning of a word in a dictionary.",
+        schemas.GET_ABSTRACT_DESCRIPTION,
+        schemas.LOOKUP_WIKIPEDIA_DESCRIPTION,
+    ),
+    "misleading_wikipedia": (
+        schemas.SEARCH_ARXIV_DESCRIPTION,
+        schemas.GET_ABSTRACT_DESCRIPTION,
+        "Convert a number from one unit of measure to another.",
+    ),
+}
+
+
+def tools_for(variant: str) -> list[dict]:
+    """Return the tool schemas for a named description set."""
+    return schemas.build_tools(*VARIANTS[variant])

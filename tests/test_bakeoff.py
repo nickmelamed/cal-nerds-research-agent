@@ -97,7 +97,7 @@ def test_append_row_writes_header_once(tmp_path):
 def test_run_all_loops_providers_questions_and_runs(tmp_path, monkeypatch):
     calls = []
 
-    def fake_run_one(client, provider, key, number):
+    def fake_run_one(client, provider, key, number, variant):
         calls.append((client, provider, key, number))
         return dict.fromkeys(run.FIELDS, "")
 
@@ -321,3 +321,67 @@ def test_report_shows_mean_cost_per_run_when_present():
     rows[0]["cost_usd"], rows[1]["cost_usd"] = "0.001", "0.003"
     assert summarize.stats(rows)["cost_mean"] == 0.002
     assert summarize.stats(make_rows("groq-free", 2, cites=2, tokens=1000))["cost_mean"] is None
+
+
+def test_run_all_loops_over_variants(tmp_path, monkeypatch):
+    seen = []
+
+    def fake_run_one(client, provider, key, number, variant):
+        seen.append((variant, number))
+        return dict.fromkeys(run.FIELDS, "")
+
+    monkeypatch.setattr(run, "run_one", fake_run_one)
+    count = run.run_all(
+        {"a": "ca"}, ["a"], ["demo"], 2, tmp_path / "r.csv", ["baseline", "vague_search"]
+    )
+    assert count == 4
+    assert seen == [("baseline", 1), ("baseline", 2), ("vague_search", 1), ("vague_search", 2)]
+
+
+def test_run_one_sends_the_variant_descriptions_and_records_the_variant(fake_tools):
+    seen = {}
+
+    class Spy(FakeClient):
+        def create(self, **kwargs):
+            seen.update(kwargs)
+            return super().create(**kwargs)
+
+    row = run.run_one(Spy([usage_reply("Done.")]), "groq-free", "demo", 1, "misleading_search")
+    sent = seen["tools"]
+    assert sent[0]["function"]["description"] == "Looks up the meaning of a word in a dictionary."
+    assert row["variant"] == "misleading_search"
+
+
+def test_every_variant_changes_only_descriptions():
+    from bakeoff.variants import BASELINE, VARIANTS, tools_for
+    from core.schemas import TOOLS
+
+    assert tools_for(BASELINE) == TOOLS
+    for name in VARIANTS:
+        shape = [(t["function"]["name"], t["function"]["parameters"]) for t in tools_for(name)]
+        assert shape == [(t["function"]["name"], t["function"]["parameters"]) for t in TOOLS]
+
+
+def test_report_adds_a_variant_table_only_for_several_variants():
+    rows = make_rows("p", 4, cites=4, tokens=6000)
+    assert "variant" not in summarize.report(rows)
+    for row in rows[:2]:
+        row["variant"] = "vague_search"
+        row["tools_used"] = "lookup_wikipedia"
+        row["steps"] = 3
+    for row in rows[2:]:
+        row["variant"] = "baseline"
+        row["steps"] = 5
+    table = summarize.variant_report(rows)
+    assert "vague_search" in table
+    assert "variant" in summarize.report(rows)
+
+
+def test_guided_example_questions_are_in_the_bakeoff():
+    from bakeoff.questions import QUESTIONS
+    from tests.test_guided import SRC
+
+    text = SRC.read_text().replace("\n# ", " ")
+    for question in QUESTIONS:
+        if question.key.startswith("guided_"):
+            assert question.text in text
