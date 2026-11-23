@@ -1,0 +1,76 @@
+provider,model,question,run,steps,tools_used,tool_calls,tool_failures,prompt_tokens,completion_tokens,cached_tokens,reasoning_tokens,total_tokens,seconds,verified,unverified,citation_pass,ended_early,remaining_tokens,error
+openrouter:auto,openai/gpt-oss-120b,demo,1,8,get_abstract lookup_wikipedia search_arxiv,7,0,9947,1797,7056,1228,11744,19.02,3,0,True,False,,
+openrouter:auto,openai/gpt-oss-120b,demo,2,8,search_arxiv,8,0,10699,907,7744,705,11606,22.51,0,0,False,True,,
+openrouter:auto,openai/gpt-oss-120b,demo,3,8,get_abstract search_arxiv,8,0,10552,1041,7376,777,11593,21.28,0,0,False,True,,
+openrouter:auto,openai/gpt-oss-120b,demo_backup,1,8,lookup_wikipedia search_arxiv,8,0,8253,1106,5312,963,9359,20.56,0,0,False,True,,
+openrouter:auto,openai/gpt-oss-120b,demo_backup,2,8,get_abstract lookup_wikipedia search_arxiv,8,0,9194,1502,6512,1342,10696,16.35,0,0,False,True,,
+openrouter:auto,openai/gpt-oss-120b,demo_backup,3,6,get_abstract lookup_wikipedia search_arxiv,5,0,4973,1527,3920,1128,6500,12.07,4,0,True,False,,
+openrouter:auto,openai/gpt-oss-120b,guided_physics,1,8,search_arxiv,8,0,9717,735,7184,591,10452,22.89,0,0,False,True,,
+openrouter:auto,openai/gpt-oss-120b,guided_physics,2,8,get_abstract search_arxiv,8,0,8609,755,7136,611,9364,17.93,0,0,False,True,,
+openrouter:auto,openai/gpt-oss-120b,guided_physics,3,8,search_arxiv,8,0,9693,659,7184,499,10352,23.63,0,0,False,True,,
+openrouter:auto,openai/gpt-oss-120b,guided_biology,1,8,get_abstract lookup_wikipedia search_arxiv,7,0,10286,1056,7872,689,11342,18.0,2,0,True,False,,
+openrouter:auto,openai/gpt-oss-120b,guided_biology,2,6,get_abstract lookup_wikipedia search_arxiv,5,0,5977,1086,3200,708,7063,17.14,2,0,True,False,,
+openrouter:auto,openai/gpt-oss-120b,guided_biology,3,7,get_abstract lookup_wikipedia search_arxiv,6,0,7802,1454,6160,1108,9256,15.77,2,0,True,False,,
+openrouter:auto,openai/gpt-oss-120b,guided_cs,1,5,get_abstract lookup_wikipedia search_arxiv,4,0,4379,704,3008,369,5083,7.13,2,0,True,False,,
+openrouter:auto,openai/gpt-oss-120b,guided_cs,2,4,get_abstract search_arxiv,3,0,3013,637,1024,329,3650,4.54,2,0,True,False,,
+openrouter:auto,openai/gpt-oss-120b,guided_cs,3,5,get_abstract lookup_wikipedia search_arxiv,4,0,4319,732,2912,434,5051,6.27,2,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,demo,1,8,get_abstract search_arxiv,8,0,10016,1059,7680,899,11075,22.75,0,0,False,True,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,demo,2,8,search_arxiv,8,0,10733,861,8496,701,11594,24.14,0,0,False,True,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,demo,3,8,search_arxiv,8,0,10749,876,8512,716,11625,24.2,0,0,False,True,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,demo_backup,1,7,get_abstract lookup_wikipedia search_arxiv,6,0,7651,1423,6176,1022,9074,15.49,4,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,demo_backup,2,8,get_abstract lookup_wikipedia search_arxiv,7,0,9138,2075,7952,1531,11213,17.54,6,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,demo_backup,3,7,get_abstract lookup_wikipedia search_arxiv,6,0,6159,1595,4480,1207,7754,13.27,4,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_physics,1,8,get_abstract lookup_wikipedia search_arxiv,8,0,9349,879,7536,719,10228,17.95,0,0,False,True,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_physics,2,8,search_arxiv,8,0,9180,749,6496,589,9929,171.34,0,0,False,True,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_physics,3,8,get_abstract search_arxiv,8,0,9141,713,6064,553,9854,85.0,0,0,False,True,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_biology,1,7,get_abstract lookup_wikipedia search_arxiv,6,0,7766,1452,5344,1068,9218,33.78,3,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_biology,2,8,get_abstract lookup_wikipedia search_arxiv,8,0,9918,1429,7760,1269,11347,17.48,0,0,False,True,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_biology,3,6,get_abstract lookup_wikipedia search_arxiv,5,0,6064,1027,4672,700,7091,30.61,3,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_cs,1,5,get_abstract lookup_wikipedia search_arxiv,4,0,4346,704,2976,412,5050,5.01,2,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_cs,2,6,get_abstract lookup_wikipedia search_arxiv,5,0,5965,1073,4608,653,7038,9.31,3,0,True,False,,
+openrouter:crusoe/bf16,openai/gpt-oss-120b,guided_cs,3,5,get_abstract lookup_wikipedia search_arxiv,4,0,4373,797,3568,464,5170,607.92,2,0,True,False,,
+openrouter:google-vertex/global,openai/gpt-oss-120b,demo,1,,,0,0,0,0,0,0,0,0.12,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,demo,2,,,0,0,0,0,0,0,0,0.06,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,demo,3,,,0,0,0,0,0,0,0,0.05,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,demo_backup,1,,,0,0,0,0,0,0,0,0.05,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,demo_backup,2,,,0,0,0,0,0,0,0,0.06,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,demo_backup,3,,,0,0,0,0,0,0,0,0.04,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_physics,1,,,0,0,0,0,0,0,0,0.06,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_physics,2,,,0,0,0,0,0,0,0,0.04,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_physics,3,,,0,0,0,0,0,0,0,0.06,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_biology,1,,,0,0,0,0,0,0,0,0.05,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_biology,2,,,0,0,0,0,0,0,0,0.04,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_biology,3,,,0,0,0,0,0,0,0,0.06,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_cs,1,,,0,0,0,0,0,0,0,0.04,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_cs,2,,,0,0,0,0,0,0,0,0.07,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:google-vertex/global,openai/gpt-oss-120b,guided_cs,3,,,0,0,0,0,0,0,0,0.04,,,,True,,"NotFoundError: Error code: 404 - No endpoints found for openai/gpt-oss-120b. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed digitalocean, google-vertex/global, siliconflow/fp8; Filter by Fallback removed near-ai/fp4, venice/int4, coreweave/fp4, akashml/fp4,"
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,demo,1,8,search_arxiv,8,0,10716,878,4128,0,11594,22.43,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,demo,2,8,get_abstract search_arxiv,8,0,10847,1144,6944,0,11991,22.7,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,demo,3,8,get_abstract lookup_wikipedia search_arxiv,8,0,9912,1505,5216,0,11417,63.79,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,demo_backup,1,6,get_abstract search_arxiv,5,0,6016,1283,2656,0,7299,11.67,3,0,True,False,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,demo_backup,2,8,get_abstract lookup_wikipedia search_arxiv,7,0,8795,1754,3552,0,10549,16.07,6,0,True,False,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,demo_backup,3,8,get_abstract search_arxiv,8,0,10222,944,5856,0,11166,21.66,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_physics,1,8,get_abstract search_arxiv,8,0,9618,819,4128,0,10437,19.25,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_physics,2,8,get_abstract search_arxiv,8,0,9737,896,5984,0,10633,21.63,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_physics,3,8,search_arxiv,8,0,9722,767,6528,0,10489,36.98,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_biology,1,8,get_abstract lookup_wikipedia search_arxiv,8,0,10249,1142,6656,0,11391,16.85,0,0,False,True,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_biology,2,7,get_abstract lookup_wikipedia search_arxiv,6,0,7933,1132,4800,0,9065,13.23,4,0,True,False,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_biology,3,5,search_arxiv,4,0,4531,904,2432,0,5435,13.2,3,0,True,False,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_cs,1,7,get_abstract lookup_wikipedia search_arxiv,6,0,8188,1144,4192,0,9332,11.58,3,0,True,False,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_cs,2,7,get_abstract lookup_wikipedia search_arxiv,6,0,8268,1278,5408,0,9546,14.38,3,0,True,False,,
+openrouter:baseten/fp4/us,openai/gpt-oss-120b,guided_cs,3,5,get_abstract lookup_wikipedia search_arxiv,4,0,4381,743,3904,0,5124,6.02,2,0,True,False,,
+groq-free,openai/gpt-oss-120b,demo,1,8,search_arxiv,8,0,10255,746,0,474,11001,24.15,0,0,False,True,43,
+groq-free,openai/gpt-oss-120b,demo,2,8,search_arxiv,8,0,10142,840,1536,577,10982,78.14,0,0,False,True,132,
+groq-free,openai/gpt-oss-120b,demo,3,8,get_abstract search_arxiv,8,0,10237,738,1536,491,10975,64.69,0,0,False,True,215,
+groq-free,openai/gpt-oss-120b,demo_backup,1,,get_abstract search_arxiv,3,0,1714,505,256,407,2219,22.63,,,,True,2,BadRequestError: Error code: 400 - Parsing failed. The model generated output that could not be parsed. Please adjust your prompt. See 'failed_generation' for more details.
+groq-free,openai/gpt-oss-120b,demo_backup,2,8,get_abstract lookup_wikipedia search_arxiv,8,0,9270,1290,1024,1040,10560,72.25,0,0,False,True,107,
+groq-free,openai/gpt-oss-120b,demo_backup,3,8,get_abstract search_arxiv,8,0,9850,1064,1536,804,10914,70.84,0,0,False,True,97,
+groq-free,openai/gpt-oss-120b,guided_physics,1,8,search_arxiv,8,0,9435,636,1536,349,10071,53.16,0,0,False,True,3535,
+groq-free,openai/gpt-oss-120b,guided_physics,2,8,search_arxiv,8,0,9398,594,4352,313,9992,24.09,0,0,False,True,303,
+groq-free,openai/gpt-oss-120b,guided_physics,3,,search_arxiv,6,0,5601,479,1536,269,6080,32.58,,,,True,110,APIConnectionError: Connection error.
+groq-free,openai/gpt-oss-120b,guided_biology,1,,,0,0,0,0,0,0,0,1.37,,,,True,110,APIConnectionError: Connection error.
+groq-free,openai/gpt-oss-120b,guided_biology,2,,,0,0,0,0,0,0,0,1.31,,,,True,110,APIConnectionError: Connection error.
+groq-free,openai/gpt-oss-120b,guided_biology,3,,,0,0,0,0,0,0,0,1.42,,,,True,110,APIConnectionError: Connection error.
+groq-free,openai/gpt-oss-120b,guided_cs,1,,,0,0,0,0,0,0,0,1.45,,,,True,110,APIConnectionError: Connection error.
+groq-free,openai/gpt-oss-120b,guided_cs,2,,,0,0,0,0,0,0,0,1.24,,,,True,110,APIConnectionError: Connection error.
+groq-free,openai/gpt-oss-120b,guided_cs,3,,,0,0,0,0,0,0,0,1.32,,,,True,110,APIConnectionError: Connection error.
