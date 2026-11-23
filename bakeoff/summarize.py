@@ -134,7 +134,14 @@ def report(rows: list[dict]) -> str:
     return "\n".join(lines)
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
+def main(argv: list[str]) -> None:
+    if len(argv) != 1:
         raise SystemExit("usage: python -m bakeoff.summarize results/bakeoff-<date>.csv")
-    print(report(load(Path(sys.argv[1]))))
+    path = Path(argv[0])
+    if not path.is_file():
+        raise SystemExit(f"No such file: {path}")
+    print(report(load(path)))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

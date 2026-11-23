@@ -270,3 +270,8 @@ def test_unverified_citations_are_listed(fake_tools):
     )
     row = run.run_one(client, "groq-free", "demo", 1)
     assert row["unverified_items"] == "9999.99999"
+
+
+def test_main_names_a_missing_file_instead_of_a_traceback(tmp_path):
+    with pytest.raises(SystemExit, match="No such file"):
+        summarize.main([str(tmp_path / "missing.csv,")])
