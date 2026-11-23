@@ -144,3 +144,30 @@ Colab.
 
 Consequences. Tool calling quality depends on the upstream provider, so the
 bake-off now compares providers. Upstream providers can still throttle.
+
+## D-009: Six step cap, forced final answer, and quote rule (2026-11-23)
+
+Context. With 8 steps and tools always on, about half of the first pilot
+runs ended at the step cap without an answer (`results/bakeoff-2026-11-21.csv`).
+Searching again and again for papers that are not on arXiv, or for dates
+that arXiv cannot filter on, caused most of them. After the prompt and
+question changes, 15 of 120 runs still capped (`results/bakeoff-main.csv`).
+
+Decision. The last model call of a run has tools turned off and a note
+asking for an answer. The cap is 6 steps. The bake-off prompt limits
+searches and tells the model that search cannot filter by date. The
+citation check ignores quoted phrases that read as examples, not titles,
+and reads Unicode hyphens inside old-style arXiv ids.
+
+Why. With the 8 step cap and the forced answer, mean tokens were 8,195 per
+run (`results/bakeoff-final-loop.csv`), over the 8,000 bar. Prompt tokens
+are most of the total because each step resends the history. With the 6 step
+cap the mean was 6,233 and the 90th percentile 7,505, with all 40 runs
+answered and cited papers verified (`results/bakeoff-six-steps.csv`).
+
+Consequences. 27 of those 40 runs used the forced last step, so most runs
+are five tool steps and an answer. Half of the `guided_biology` runs used
+search only and never read an abstract, so their answers lean on titles and
+the model's own knowledge. The citation check confirms a cited paper was
+retrieved, not that a claim about it is right. This is 10 runs per question
+on one routing setting, so the margins are wide.

@@ -5,12 +5,12 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 3. OpenRouter provider bake-off for gpt-oss-120b plus a free Groq
-      baseline, including tokens per run and pricing.
-      The scripts are built (`bakeoff/run.py`, `bakeoff/summarize.py`).
-      Nick runs `python -m bakeoff.run --pilot`, then the full run, then
-      `python -m bakeoff.summarize results/bakeoff-<date>.csv`. Prices need
-      checking before cost numbers go in docs.
+- [ ] Phase 3. OpenRouter bake-off for gpt-oss-120b. The loop, prompt, and
+      6 step cap are settled (D-009, `results/bakeoff-six-steps.csv`). Left:
+      choose a pinned provider and a fallback by name, since `openrouter:auto`
+      spreads calls over several upstream providers. Run the free Groq
+      baseline, which hit connection errors in the pilot. Confirm OpenRouter
+      pricing before cost numbers go in docs.
 
 ## Next
 
@@ -58,7 +58,33 @@ phase. CLAUDE.md stays stable and does not track status.
 - [x] Phase 2. Tool schemas, agent loop, tracer, and citation check, with
       mocked-Groq tests (PR #3)
 
+## Phase 4 notes from the bake-off
+
+- Use `MAX_STEPS = 6` and the forced last step from `core/agent.py`. Without
+  them, runs averaged more than 8k tokens (`results/bakeoff-final-loop.csv`).
+- Start from the system prompt in `bakeoff/questions.py`. The search limit
+  and the "no years in a query" line are what stopped the search loops.
+- The demo candidates are `demo_open` and `backup_weather`. The original
+  named-systems question (AlphaFold, RoseTTAFold) never finished in
+  `results/bakeoff-diagnose3.csv`, because those papers are not on arXiv.
+- The citation check passes an answer whose claims come from the model's own
+  knowledge, as long as the cited ids were retrieved. Say so in the demo
+  script.
+
+## Phase 6 notes from the bake-off
+
+- Exercise 2 lets students pick a question. A question that asks for
+  "recent" papers sent the agent into repeated searches with years in the
+  query, because arXiv search cannot filter by date. Warn students or word
+  the example questions without "recent".
+- Questions that name a famous system whose paper is not on arXiv have the
+  same effect.
+- The guided questions in `bakeoff/questions.py` are placeholders.
+
 ## Phase 3 handoff notes
+
+Written before the bake-off and partly out of date. D-008 replaced the model
+comparison with a provider comparison.
 
 Starting point for planning the bake-off in a separate conversation. The
 approach below is a proposal, not an agreed plan. Read "Model selection" and
