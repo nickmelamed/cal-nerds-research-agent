@@ -5,9 +5,7 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-- [ ] Phase 3. Done except the pull request. Results: `results/bakeoff-six-steps.csv`
-      (tokens and citations), `results/bakeoff-groq-baseline.csv` (free Groq key),
-      `results/bakeoff-cost-sample.csv` (cost, now in docs/SPEC.md).
+Nothing in progress. Phase 5 is next.
 
 ## Next
 
@@ -55,6 +53,9 @@ phase. CLAUDE.md stays stable and does not track status.
       (PR #1). Now covers both OpenRouter and Groq, see D-008
 - [x] Phase 2. Tool schemas, agent loop, tracer, and citation check, with
       mocked-Groq tests (PR #3)
+- [x] Phase 3. Bake-off (PR #6). Results: `results/bakeoff-six-steps.csv`
+      (tokens and citations), `results/bakeoff-groq-baseline.csv` (free Groq
+      key), `results/bakeoff-cost-sample.csv` (cost, now in docs/SPEC.md)
 - [x] Phase 4. `build.py`, the demo notebook, and OFFLINE mode, see D-010
       (PR #7)
 
