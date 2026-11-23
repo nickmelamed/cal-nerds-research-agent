@@ -275,3 +275,10 @@ def test_unverified_citations_are_listed(fake_tools):
 def test_main_names_a_missing_file_instead_of_a_traceback(tmp_path):
     with pytest.raises(SystemExit, match="No such file"):
         summarize.main([str(tmp_path / "missing.csv,")])
+
+
+def test_run_one_records_which_upstream_provider_answered(fake_tools):
+    response = usage_reply("hi")
+    response.provider = "Baseten"
+    row = run.run_one(FakeClient([response]), "openrouter:auto", "demo_open", 1)
+    assert row["served_by"] == "Baseten"

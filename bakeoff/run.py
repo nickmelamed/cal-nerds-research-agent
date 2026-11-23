@@ -38,6 +38,7 @@ FIELDS = [
     "completion_tokens",
     "cached_tokens",
     "reasoning_tokens",
+    "served_by",
     "total_tokens",
     "seconds",
     "verified",
@@ -141,6 +142,7 @@ def run_one(client, provider: str, question_key: str, run: int) -> dict:
         completion_tokens=summary["completion_tokens"],
         cached_tokens=summary["cached_tokens"],
         reasoning_tokens=summary["reasoning_tokens"],
+        served_by=summary["served_by"],
         total_tokens=summary["tokens"],
         remaining_tokens=_remaining(provider),
     )

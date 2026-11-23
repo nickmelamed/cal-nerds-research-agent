@@ -13,6 +13,10 @@ MODEL = "openai/gpt-oss-120b"
 MAX_STEPS = 8
 RESULT_CHARS = 2000
 TRUNCATION_MARK = " [truncated]"
+FINAL_STEP_NOTE = (
+    "You have no tool calls left. Answer now using only what the tools "
+    "returned, and cite only papers they returned."
+)
 
 TOOL_FUNCTIONS = {
     "search_arxiv": tools.search_arxiv,
@@ -81,12 +85,16 @@ def run_agent(
     for step in range(1, max_steps + 1):
         start = time.monotonic()
         try:
+            # The last call has tools off so a run that keeps searching still
+            # ends with an answer built from what it already retrieved.
+            last = step == max_steps and max_steps > 1
             response = chat(
                 client,
                 model=model,
-                messages=messages,
+                messages=messages + [{"role": "user", "content": FINAL_STEP_NOTE}] * last,
                 tools=tool_schemas,
                 extra_body=extra_body,
+                **({"tool_choice": "none"} if last else {}),
             )
         except Exception as error:
             if "tool_use_failed" not in str(error):
@@ -115,6 +123,7 @@ def run_agent(
             completion=_count(usage, "completion_tokens"),
             cached=_count(getattr(usage, "prompt_tokens_details", None), "cached_tokens"),
             reasoning=_count(getattr(usage, "completion_tokens_details", None), "reasoning_tokens"),
+            served_by=_served_by(response),
         )
 
         message = response.choices[0].message
@@ -154,6 +163,13 @@ def run_agent(
     text = f"Stopped after {max_steps} steps without a final answer."
     tracer.answer(text)
     return AgentResult(text, max_steps, tracer)
+
+
+def _served_by(response) -> str:
+    name = getattr(response, "provider", None)
+    if name is None:
+        name = (getattr(response, "model_extra", None) or {}).get("provider")
+    return name if isinstance(name, str) else ""
 
 
 def _count(obj, name: str) -> int:

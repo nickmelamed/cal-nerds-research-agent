@@ -27,11 +27,13 @@ class Tracer:
         completion: int = 0,
         cached: int = 0,
         reasoning: int = 0,
+        served_by: str = "",
     ) -> None:
         """Record the token counts and latency of one model call.
 
         ``cached`` is part of ``prompt`` and ``reasoning`` is part of
         ``completion``. Both stay 0 when the API does not report them.
+        ``served_by`` is the upstream provider OpenRouter names in its reply.
         """
         self.calls.append(
             {
@@ -42,6 +44,7 @@ class Tracer:
                 "completion": completion,
                 "cached": cached,
                 "reasoning": reasoning,
+                "served_by": served_by,
             }
         )
 
@@ -73,5 +76,6 @@ class Tracer:
             "completion_tokens": sum(c["completion"] for c in self.calls),
             "cached_tokens": sum(c["cached"] for c in self.calls),
             "reasoning_tokens": sum(c["reasoning"] for c in self.calls),
+            "served_by": " ".join(sorted({c["served_by"] for c in self.calls} - {""})),
             "seconds": round(sum(c["seconds"] for c in self.calls), 2),
         }

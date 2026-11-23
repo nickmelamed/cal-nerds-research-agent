@@ -181,3 +181,51 @@ def test_extra_body_reaches_the_client():
     body = {"provider": {"order": ["X"]}}
     agent.run_agent(Spy([reply("hi")]), "q", "sys", TOOLS, extra_body=body)
     assert seen["extra_body"] == body
+
+
+class Spy(FakeClient):
+    def __init__(self, outcomes):
+        super().__init__(outcomes)
+        self.kwargs = []
+
+    def create(self, **kwargs):
+        self.kwargs.append({k: v for k, v in kwargs.items() if k != "messages"})
+        return super().create(**kwargs)
+
+
+def test_last_step_turns_tools_off_and_asks_for_an_answer(monkeypatch):
+    monkeypatch.setitem(agent.TOOL_FUNCTIONS, "search_arxiv", lambda query: [])
+    calls = [tool_call("search_arxiv", {"query": "x"})]
+    spy = Spy([reply(calls=calls), reply("final answer")])
+    result = agent.run_agent(spy, "q", "sys", TOOLS, max_steps=2)
+    assert result.answer == "final answer"
+    assert "tool_choice" not in spy.kwargs[0]
+    assert spy.kwargs[1]["tool_choice"] == "none"
+    assert "answer now" in spy.requests[1][-1]["content"].lower()
+
+
+def test_earlier_steps_keep_tools_on():
+    spy = Spy([reply("done")])
+    agent.run_agent(spy, "q", "sys", TOOLS, max_steps=3)
+    assert "tool_choice" not in spy.kwargs[0]
+
+
+def test_single_step_runs_still_get_tools():
+    spy = Spy([reply("done")])
+    agent.run_agent(spy, "q", "sys", TOOLS, max_steps=1)
+    assert "tool_choice" not in spy.kwargs[0]
+
+
+def test_served_by_is_read_from_the_response_body():
+    plain = reply("hi")
+    plain.provider = "Baseten"
+    _, result = run([plain])
+    assert result.tracer.summary()["served_by"] == "Baseten"
+
+    extra = reply("hi")
+    extra.model_extra = {"provider": "Crusoe"}
+    _, result = run([extra])
+    assert result.tracer.summary()["served_by"] == "Crusoe"
+
+    _, result = run([reply("hi")])
+    assert result.tracer.summary()["served_by"] == ""
