@@ -19,6 +19,9 @@ and the columns differ between them. Older files lack some columns, such as
 | `bakeoff-final-loop.csv` | 40 | `openrouter:auto`, 8 step cap, forced last step | Tokens before the cap was lowered, in D-009 |
 | `bakeoff-main.csv` | 120 | two OpenRouter routes, 8 step cap, tools always on | Capped runs after the prompt change, in D-009 |
 | `bakeoff-2026-11-21.csv` | 75 | four OpenRouter routes and a free Groq key, 8 step cap | First pilot, in D-009 |
+| `bakeoff-ex3.csv` | 40 | `guided_biology`, four description sets, default prompt | Exercise 3 wording test, in D-012 |
+| `bakeoff-ex3-minimal.csv` | 40 | same, with the minimal prompt that names no tool | Exercise 3 wording test, in D-012 |
+| `bakeoff-ex3-wiki.csv` | 50 | `demo`, five description sets, default prompt | Exercise 3 wording test, in D-012 |
 
 ## Diagnostic and small checks
 
