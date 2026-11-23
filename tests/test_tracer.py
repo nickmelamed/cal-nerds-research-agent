@@ -24,6 +24,7 @@ def test_summary_totals_tokens_and_latency():
         "completion_tokens": 0,
         "cached_tokens": 0,
         "reasoning_tokens": 0,
+        "cost": 0,
         "served_by": "",
         "seconds": 1.75,
     }
@@ -61,3 +62,11 @@ def test_summary_lists_the_providers_that_served_the_calls():
     tracer.model_call(3, 10, 0.1, served_by="Crusoe")
     tracer.model_call(4, 10, 0.1)
     assert tracer.summary()["served_by"] == "Baseten Crusoe"
+
+
+def test_summary_totals_cost():
+    tracer = Tracer(verbose=False)
+    tracer.model_call(1, 10, 0.1, cost=0.0004)
+    tracer.model_call(2, 10, 0.1, cost=0.0006)
+    tracer.model_call(3, 10, 0.1)
+    assert tracer.summary()["cost"] == 0.001

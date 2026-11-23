@@ -39,6 +39,7 @@ FIELDS = [
     "cached_tokens",
     "reasoning_tokens",
     "served_by",
+    "cost_usd",
     "total_tokens",
     "seconds",
     "verified",
@@ -98,6 +99,14 @@ def request_options(provider: str) -> dict | None:
     return {"provider": {"order": [slug], "allow_fallbacks": False}}
 
 
+def _body(provider: str) -> dict | None:
+    """Return the request body: routing, plus usage accounting for OpenRouter."""
+    body = request_options(provider)
+    if provider.startswith(OPENROUTER_PREFIX):
+        body = {**(body or {}), "usage": {"include": True}}
+    return body
+
+
 def run_one(client, provider: str, question_key: str, run: int) -> dict:
     """Run the agent once and return a CSV row. Exceptions are recorded in it."""
     question = BY_KEY[question_key]
@@ -114,10 +123,11 @@ def run_one(client, provider: str, question_key: str, run: int) -> dict:
             MAX_STEPS,
             tracer,
             MODEL,
-            request_options(provider),
+            _body(provider),
         )
     except Exception as error:
-        row.update(error=f"{type(error).__name__}: {error}"[:300], ended_early=True)
+        cause = f" (cause: {error.__cause__!r})" if error.__cause__ else ""
+        row.update(error=f"{type(error).__name__}: {error}{cause}"[:400], ended_early=True)
         summary = tracer.summary()
     else:
         summary = tracer.summary()
@@ -143,6 +153,7 @@ def run_one(client, provider: str, question_key: str, run: int) -> dict:
         cached_tokens=summary["cached_tokens"],
         reasoning_tokens=summary["reasoning_tokens"],
         served_by=summary["served_by"],
+        cost_usd=summary["cost"] or "",
         total_tokens=summary["tokens"],
         remaining_tokens=_remaining(provider),
     )

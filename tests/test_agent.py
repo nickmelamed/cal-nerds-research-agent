@@ -229,3 +229,18 @@ def test_served_by_is_read_from_the_response_body():
 
     _, result = run([reply("hi")])
     assert result.tracer.summary()["served_by"] == ""
+
+
+def test_cost_is_read_from_usage_when_reported():
+    response = reply("hi")
+    response.usage.cost = 0.0123
+    _, result = run([response])
+    assert result.tracer.summary()["cost"] == 0.0123
+
+    extra = reply("hi")
+    extra.usage.model_extra = {"cost": 0.5}
+    _, result = run([extra])
+    assert result.tracer.summary()["cost"] == 0.5
+
+    _, result = run([reply("hi")])
+    assert result.tracer.summary()["cost"] == 0

@@ -282,3 +282,42 @@ def test_run_one_records_which_upstream_provider_answered(fake_tools):
     response.provider = "Baseten"
     row = run.run_one(FakeClient([response]), "openrouter:auto", "demo_open", 1)
     assert row["served_by"] == "Baseten"
+
+
+def test_openrouter_runs_ask_for_cost_and_groq_runs_do_not(fake_tools):
+    seen = []
+
+    class Spy(FakeClient):
+        def create(self, **kwargs):
+            seen.append(kwargs.get("extra_body"))
+            return super().create(**kwargs)
+
+    run.run_one(Spy([usage_reply("hi")]), "openrouter:auto", "demo_open", 1)
+    run.run_one(Spy([usage_reply("hi")]), "openrouter:Fireworks", "demo_open", 1)
+    run.run_one(Spy([usage_reply("hi")]), "groq-free", "demo_open", 1)
+    assert seen[0] == {"usage": {"include": True}}
+    assert seen[1]["usage"] == {"include": True} and seen[1]["provider"]["order"] == ["Fireworks"]
+    assert seen[2] is None
+
+
+def test_cost_column_is_filled_from_usage_and_blank_without_it(fake_tools):
+    response = usage_reply("hi")
+    response.usage.cost = 0.002
+    row = run.run_one(FakeClient([response]), "openrouter:auto", "demo_open", 1)
+    assert row["cost_usd"] == 0.002
+    row = run.run_one(FakeClient([usage_reply("hi")]), "groq-free", "demo_open", 1)
+    assert row["cost_usd"] == ""
+
+
+def test_error_text_includes_the_underlying_cause(fake_tools):
+    error = RuntimeError("Connection error.")
+    error.__cause__ = OSError("nodename nor servname provided")
+    row = run.run_one(FakeClient([error]), "groq-free", "demo_open", 1)
+    assert "nodename nor servname" in row["error"]
+
+
+def test_report_shows_mean_cost_per_run_when_present():
+    rows = make_rows("openrouter:A", 2, cites=2, tokens=1000)
+    rows[0]["cost_usd"], rows[1]["cost_usd"] = "0.001", "0.003"
+    assert summarize.stats(rows)["cost_mean"] == 0.002
+    assert summarize.stats(make_rows("groq-free", 2, cites=2, tokens=1000))["cost_mean"] is None

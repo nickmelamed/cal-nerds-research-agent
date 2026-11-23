@@ -124,6 +124,7 @@ def run_agent(
             cached=_count(getattr(usage, "prompt_tokens_details", None), "cached_tokens"),
             reasoning=_count(getattr(usage, "completion_tokens_details", None), "reasoning_tokens"),
             served_by=_served_by(response),
+            cost=_cost(usage),
         )
 
         message = response.choices[0].message
@@ -163,6 +164,13 @@ def run_agent(
     text = f"Stopped after {max_steps} steps without a final answer."
     tracer.answer(text)
     return AgentResult(text, max_steps, tracer)
+
+
+def _cost(usage) -> float:
+    value = getattr(usage, "cost", None)
+    if value is None:
+        value = (getattr(usage, "model_extra", None) or {}).get("cost")
+    return float(value) if isinstance(value, (int, float)) else 0.0
 
 
 def _served_by(response) -> str:

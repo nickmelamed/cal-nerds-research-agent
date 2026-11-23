@@ -33,6 +33,11 @@ def _p90(values: list[float]) -> float:
     return ordered[min(len(ordered) - 1, int(0.9 * len(ordered)))] if ordered else 0.0
 
 
+def _mean_cost(rows: list[dict]) -> float | None:
+    costs = [float(r["cost_usd"]) for r in rows if r.get("cost_usd")]
+    return statistics.fmean(costs) if costs else None
+
+
 def stats(rows: list[dict]) -> dict:
     """Return the measures from docs/SPEC.md for one group of runs."""
     # A run with no tool call counts as one failed call, as in PASS_BAR.md.
@@ -54,6 +59,7 @@ def stats(rows: list[dict]) -> dict:
         ),
         "cached_tokens": sum(_num(r["cached_tokens"]) for r in rows),
         "reasoning_tokens": sum(_num(r["reasoning_tokens"]) for r in rows),
+        "cost_mean": _mean_cost(rows),
     }
 
 
@@ -93,11 +99,16 @@ def pick(per_provider: dict[str, dict]) -> list[str]:
     )
 
 
+def _cost_cell(cost: float | None) -> str:
+    return "-" if cost is None else f"{cost:.5f}"
+
+
 def _line(label: str, s: dict) -> str:
     return (
         f"{label:<34}{s['runs']:>5}{s['tool_success']:>8.0%}{s['multi_tool']:>8.0%}"
         f"{s['citation_pass']:>8.0%}{s['tokens_mean']:>9.0f}{s['tokens_p90']:>9.0f}"
         f"{s['seconds_mean']:>8.1f}{s['error_rate']:>8.0%}{s['cached_tokens']:>9.0f}"
+        f"{_cost_cell(s['cost_mean']):>10}"
     )
 
 
@@ -105,7 +116,7 @@ def report(rows: list[dict]) -> str:
     """Return the per-provider and per-question tables plus the selection."""
     header = (
         f"{'':<34}{'runs':>5}{'tools':>8}{'multi':>8}{'cites':>8}"
-        f"{'tok avg':>9}{'tok p90':>9}{'sec':>8}{'errors':>8}{'cached':>9}"
+        f"{'tok avg':>9}{'tok p90':>9}{'sec':>8}{'errors':>8}{'cached':>9}{'$/run':>10}"
     )
     lines = [header]
     per_provider = by_provider(rows)
