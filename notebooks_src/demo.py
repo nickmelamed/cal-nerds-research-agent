@@ -1,10 +1,9 @@
 # %% [markdown]
 # # Research paper assistant: the finished agent
 #
-# This notebook is the finished agent. It searches arXiv for papers, reads
-# abstracts, looks up unfamiliar terms on Wikipedia, and answers with
-# citations. Afterwards it checks that every paper it cited was really
-# returned by a tool during this run.
+# This agent searches arXiv for papers, reads abstracts, looks up unfamiliar
+# terms on Wikipedia, and answers with citations. Afterwards it checks that
+# every cited paper was returned by a tool during this run.
 #
 # Run the cells from top to bottom. The cells with a title and hidden code
 # hold the tools. You can open them with the arrow on the left.
@@ -12,8 +11,8 @@
 # %% [markdown]
 # ## 1. Setup
 #
-# First we install the `openai` package. It is the library that talks to the
-# model, even though we use it with OpenRouter or Groq.
+# First we install the `openai` package. It is the client library, and it
+# also works with OpenRouter and Groq.
 
 # %%
 # !pip install -q openai
@@ -53,13 +52,13 @@
 OFFLINE = False
 
 client = make_client()
-smoke_test(client)
+assert smoke_test(client), "Fix the key problem above, then run this cell again."
 
 # %% [markdown]
 # ## 4. Tell the model what the tools do
 #
-# The model never sees our Python code. It only sees these descriptions, so
-# clear descriptions are how it decides which tool to call.
+# The model sees only these descriptions, not our Python code, so it picks
+# tools based on them.
 
 # %%
 # @core schemas
@@ -67,10 +66,10 @@ smoke_test(client)
 # %% [markdown]
 # ## 5. The agent loop
 #
-# The loop is the whole idea of an agent. We ask the model. If it wants a
-# tool, we run the tool, hand back the result, and ask again. When it answers
-# without asking for a tool, we are done. `MAX_STEPS` stops a run that never
-# settles, and the last step turns tools off so the model has to answer.
+# The loop asks the model. If it wants a tool, we run the tool, hand back the
+# result, and ask again. When it answers without a tool request, we are done.
+# `MAX_STEPS` stops a run that never settles, and the last step turns tools
+# off so the model has to answer.
 
 # %%
 # @title Trace printer and citation check
@@ -132,6 +131,8 @@ QUESTION = (
 result = run_agent(client, QUESTION, SYSTEM_PROMPT, TOOLS)
 report = check_citations(result.answer, result.tracer.tool_results)
 print(report.summary)
+if report.unverified:
+    print("Not retrieved by any tool:", report.unverified)
 
 # %% [markdown]
 # ## 9. Compare with a chatbot

@@ -190,13 +190,13 @@ its place, and `# @offline-data` gets the recorded responses from
 starts with `# @title` becomes a collapsed Colab form cell. `--check` compares
 cell types, sources, and metadata and ignores outputs.
 
-The setup is spread over a few cells because `OFFLINE` has to be defined after
-the tools cell, which sets its own default. `ruff` skips `notebooks/` and
-`notebooks_src/`. The notebooks are generated from `core/`, which ruff
-checks, and the sources use names that exist only after the build.
+`OFFLINE` is set in its own cell after the tools cell, because the tools cell
+sets a default. Ruff skips `notebooks/` and `notebooks_src/`. The notebooks
+are generated from `core/`, which ruff already checks, and the sources use
+names that exist only after the build.
 
 Consequences. `OFFLINE = True` replaces only the arXiv and Wikipedia calls.
 The model still needs a key and a network. Saved responses cover only the
 recorded queries, so most questions get a "could not be reached" message.
-`MODEL` moved from `core/agent.py` to `core/client.py` so the smoke test can
-use it before the agent cell runs.
+`MODEL` lives in `core/client.py` so the smoke test can use it before the
+agent cell runs.

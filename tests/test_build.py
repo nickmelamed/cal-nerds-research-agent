@@ -1,3 +1,4 @@
+import json
 import re
 import shutil
 
@@ -82,25 +83,27 @@ def test_check_fails_when_notebook_is_stale(tmp_path, monkeypatch):
 
 
 def test_built_demo_runs_offline_with_a_fake_model(demo):
-    namespace = {}
-    for source in code_cells(demo):
-        if source.startswith("!") or "make_client()" in source:
-            continue
-        if source.startswith("QUESTION"):
-            break
-        exec(source, namespace)
-    namespace["OFFLINE"] = True
-    found = namespace["search_arxiv"](RECORDED_QUERY)
-    assert isinstance(found, list)
-    paper_id = found[0]["id"]
-
+    data = json.loads(build.FIXTURES.read_text())
+    paper_id = "2401.00001"
     fake = FakeClient(
         [
+            reply("ready"),
             reply(calls=[tool_call("search_arxiv", {"query": RECORDED_QUERY})]),
-            reply(f"One relevant paper is arXiv:{paper_id}."),
+            reply("One relevant paper is arXiv:" + paper_id + "."),
+            reply("A second answer with no citations."),
         ]
     )
-    result = namespace["run_agent"](fake, "q", namespace["SYSTEM_PROMPT"], namespace["TOOLS"])
-    report = namespace["check_citations"](result.answer, result.tracer.tool_results)
-    assert report.verified == [paper_id]
-    assert report.unverified == []
+    namespace = {}
+    for source in code_cells(demo):
+        if source.startswith("!"):
+            continue
+        if "make_client()" in source:
+            # Run the real flag cell but with OFFLINE on and the fake model.
+            source = source.replace("OFFLINE = False", "OFFLINE = True")
+            namespace["make_client"] = lambda: fake
+        exec(source, namespace)
+    assert namespace["OFFLINE_DATA"] == data
+    assert namespace["result"].answer == "A second answer with no citations."
+    assert namespace["report"].unverified == []
+    first = [c for c in fake.requests if any(m.get("role") == "tool" for m in c)]
+    assert first, "the first question should have called a tool"

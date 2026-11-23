@@ -9,9 +9,9 @@ phase. CLAUDE.md stays stable and does not track status.
       (tokens and citations), `results/bakeoff-groq-baseline.csv` (free Groq key),
       `results/bakeoff-cost-sample.csv` (cost, now in docs/SPEC.md).
 
-- [ ] Phase 4. Done except the pull request. `build.py`, `notebooks_src/demo.py`,
-      and `notebooks/demo.ipynb` are in place. The saved-outputs copy of a good
-      live run is still to do (Nick).
+- [ ] Phase 4. `build.py`, `notebooks_src/demo.py`, and `notebooks/demo.ipynb`
+      are written. Left: Nick saves a copy of the demo with outputs from a good
+      live run, and the pull request.
 
 ## Next
 
@@ -21,9 +21,8 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Colab checklist (Nick, by hand)
 
-- [ ] Demo notebook: the `!pip install` cell, the smoke test text, and OFFLINE
-      mode in a fresh runtime
-- [ ] Demo notebook: the Open in Colab badge opens notebooks/demo.ipynb
+- [ ] Demo notebook in a fresh runtime: the `!pip install` cell, the smoke test
+      text, OFFLINE mode, and the Open in Colab badge
 - [ ] Each notebook runs with Run all in a fresh runtime on a fresh Google
       account, once with the workshop key and once with a free key
 - [ ] Colab Secrets and the `getpass` fallback both work (`get_api_key` in
