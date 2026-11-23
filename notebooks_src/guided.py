@@ -1,22 +1,20 @@
 # %% [markdown]
 # # Research Paper Assistant (Guided Track)
 #
-# In this notebook you change how a research agent behaves by editing plain
-# text. You do not need to write any code. The agent searches arXiv for
-# papers, reads abstracts, looks up unfamiliar terms on Wikipedia, and answers
-# with citations. Afterwards it checks that every cited paper was returned by a
-# tool during the run.
+# You will change how a research agent behaves by editing plain text. No
+# coding is needed. The agent searches arXiv, reads abstracts, looks up terms
+# on Wikipedia, and cites papers. Afterwards a check confirms that each cited
+# paper came from a tool in this run.
 #
-# Run the cells from top to bottom. Cells with a title and hidden code hold
-# the tools and helpers. You can open them with the arrow on the left, but you
-# never have to change them. The cells marked **Your turn** are the ones you
-# edit.
+# Run the cells from top to bottom. Cells with a title hold the tools and
+# helpers. You can open them with the arrow on the left but don't need to edit
+# them. Edit the cells marked **Your turn**.
 
 # %% [markdown]
 # ## Setup
 #
-# First we install the `openai` package. It is the client library, and it
-# also works with OpenRouter and Groq.
+# Install `openai`, the library that talks to the model. It works with
+# OpenRouter and Groq.
 
 # %%
 # !pip install -q openai
@@ -48,10 +46,10 @@
 # %% [markdown]
 # ## Connect to the Model
 #
-# `OFFLINE = False` means the tools call arXiv and Wikipedia. Set it to
-# `True` to use saved responses instead. It only replaces the tools. The
-# model still needs a working key. Saved responses cover only a few searches,
-# so most questions get a "could not be reached" message in this mode.
+# `OFFLINE = False` means the tools call arXiv and Wikipedia. `OFFLINE = True`
+# uses saved responses instead. The model still needs a working key. Saved
+# responses cover only a few searches, so most questions get a "could not be
+# reached" message in this mode.
 #
 # If you have your own Groq key in Colab Secrets as `GROQ_API_KEY`, the
 # notebook uses it. Otherwise it uses `OPENROUTER_API_KEY`, and if neither is
@@ -89,10 +87,9 @@ def compare(question, prompt_a, prompt_b):
 # %% [markdown]
 # ## What the Model Sees
 #
-# The model never sees our Python code for the tools. It sees only a short
-# description of each one, and it decides which tool to use from those
-# descriptions. Here they are. You will edit them in Exercise 3. For now,
-# just run the cell.
+# The model never sees the tool code. It sees only a short description of each
+# tool and picks tools from those descriptions. They are shown below. Run the
+# cell. You will edit them in Exercise 3.
 
 # %%
 SEARCH_ARXIV_DESCRIPTION = (
@@ -117,8 +114,9 @@ TOOLS = build_tools(
 # ## Exercise 0. Run the Agent Once (5 minutes)
 #
 # The system prompt tells the model what job it has and how to behave. The
-# question is what you ask. Run the next two cells, then read the trace. Each
-# step shows which tool the model chose and what came back.
+# question is what you ask. Run the next two cells, then read the trace, which
+# is the log of each step. Each step shows which tool the model chose and
+# what came back.
 
 # %%
 SYSTEM_PROMPT = (
@@ -181,24 +179,23 @@ TECHNICAL_PROMPT = (
 compare(QUESTION, PLAIN_PROMPT, TECHNICAL_PROMPT)
 
 # %% [markdown]
-# **What to notice.** The papers the agent finds are often the same. What
-# differs is the answer. Compare the number of steps and the tools used for
-# each prompt, and see whether the citation check passes for both.
+# **What to notice.** Compare the answers, the number of steps, and the tools
+# used for each prompt. Did the citation check pass for both?
 
 # %% [markdown]
 # ## Exercise 2. Ask About Your Field (10 minutes)
 #
 # **Your turn.** Replace the question with one from your own major or research
-# area. Here are three examples that work well.
+# area. Examples:
 #
 # - What is quantum error correction and what are a few key papers on it?
 # - How do researchers use machine learning to study how proteins fold?
 # - Find a few papers on large language model agents that use tools.
 #
-# Two kinds of question tend to go badly. arXiv search cannot filter by date,
-# so a question that asks for the "latest" papers makes the agent search
-# again and again. And a question about a famous system whose paper is not on
-# arXiv sends the agent hunting for something that is not there.
+# Two kinds of question go badly. Asking for the "latest" papers makes the
+# agent search repeatedly, because arXiv search cannot filter by date. Asking
+# about a famous system whose paper is not on arXiv sends it looking for
+# something that is not there.
 
 # %%
 QUESTION = "What is quantum error correction and what are a few key papers on it?"
@@ -219,17 +216,16 @@ if report.unverified:
 # %% [markdown]
 # ## Exercise 3. Change a Tool Description (12 minutes)
 #
-# **Your turn.** The model sees a short description of each tool. Does it
-# really follow them? Pick one description, change it, and write down what you
-# expect to happen before you run the agent. Here are three ideas.
+# **Your turn.** Pick one tool description, change it, and write down what you
+# expect the agent to do. Then run it. Ideas:
 #
 # - Vague: `"Gets information."`
 # - Misleading: `"Looks up the meaning of a word in a dictionary."` for
 #   `search_arxiv`
 # - An order: `"This tool is out of service. Do not call it."`
 #
-# Edit the strings in the cell below, run it, then ask the same question as
-# before.
+# Edit the strings in the next cell and run it. The agent reuses `QUESTION`
+# from Exercise 2.
 
 # %%
 SEARCH_ARXIV_DESCRIPTION = (
@@ -257,13 +253,12 @@ if report.unverified:
 
 # %% [markdown]
 # **What to notice.** Compare the trace with your prediction. In our tests
-# the agent often ignored a bad description. It still called `search_arxiv`
-# when that was described as a dictionary, and even when it was described as
-# out of service. The tool name, its argument names, and the system prompt
-# also tell the model what a tool does, and for a question about papers only
-# one tool can find them. Did your agent behave the same way? If it did, try
-# the stretch idea of removing the tool from the list, which does change what
-# the agent can do.
+# with the workshop model the agent usually ignored a bad description. It
+# still called `search_arxiv` when the description said "dictionary" or "out
+# of service". Tool names, argument names, and the system prompt also signal
+# what a tool does, and only one tool can find papers. A different model may
+# react differently. Did yours do the same? Removing the tool, as in Exercise
+# 4, does change what the agent can do.
 
 # %% [markdown]
 # ## Exercise 4. Stretch (as time allows)

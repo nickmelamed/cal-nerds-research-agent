@@ -28,7 +28,7 @@ def guided():
 
 
 def run_cells(notebook, fake):
-    """Execute every code cell with OFFLINE on and the fake model. Return the namespace."""
+    """Run every code cell offline with the fake model and return the namespace."""
     namespace = {}
     for source in code_cells(notebook):
         if source.startswith("!"):

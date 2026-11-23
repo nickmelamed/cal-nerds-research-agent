@@ -5,10 +5,8 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-Phase 6 is built. The exercise 3 wording tests are done and recorded in
-D-012. No description wording reliably broke the agent, so exercise 3 asks
-students to predict and compare. Left for Nick: edit the exercise 3 row and
-the paragraph after it in docs/SPEC.md (protected), then review and merge.
+Phase 6 is built and reviewed. The exercise 3 results are in D-012 and the
+spec wording was updated to match. Next is the pull request.
 
 ## Next
 
@@ -36,9 +34,9 @@ the paragraph after it in docs/SPEC.md (protected), then review and merge.
 - [ ] Full-code starter runs with Run all in a fresh runtime, the hint
       `<details>` blocks render, and the task 2 and 3 test cells print
       "Not yet" on the untouched starter, with Wi-Fi off for task 2
-- [ ] Guided notebook runs with Run all in a fresh runtime, form cells render
+- [x] Guided notebook runs with Run all in a fresh runtime, form cells render
       collapsed, and `compare` finishes well inside the exercise 1 time
-- [ ] Guided notebook with `OFFLINE = True` on the three exercise 2 questions
+- [x] Guided notebook with `OFFLINE = True` on the three exercise 2 questions
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
 - [ ] A handful of simultaneous sessions on the workshop key, watching the

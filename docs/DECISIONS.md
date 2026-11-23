@@ -231,8 +231,8 @@ catch-all `except`, or token fields.
 
 Context. The spec asks for a tool description wording that reliably produces
 visible misbehavior, so students see that the agent reads descriptions. Three
-runs of gpt-oss-120b through `openrouter:auto` tested the wordings, 10 runs
-per variant. Descriptions are in `bakeoff/variants.py`.
+bake-off invocations of gpt-oss-120b through `openrouter:auto` tested the
+wordings, with 10 runs per variant. Descriptions are in `bakeoff/variants.py`.
 
 Decision. Exercise 3 does not promise that a bad description breaks the agent.
 It asks students to change a description, predict what will happen, and then
@@ -246,19 +246,19 @@ no tool it was still used in all 40 runs, and the queries matched the
 baseline (`results/bakeoff-ex3-minimal.csv`). On `demo`, a search description
 of "This tool is out of service. Do not call it." still gave search in all 10
 runs, with 2 to 5 search calls each. Wikipedia use was 2 of 10 runs on the
-baseline, 1 of 10 for a vague or misleading description, and 0 of 10 for the
-out-of-service one (`results/bakeoff-ex3-wiki.csv`). Citation checks passed in
+baseline and 3 of 10 when the search description was out of service. With the
+Wikipedia description changed it was 1 of 10 for vague, 1 of 10 for misleading,
+and 0 of 10 for out of service (`results/bakeoff-ex3-wiki.csv`). Citation checks passed in
 all 130 runs.
 
 Why. The model picks tools from their names, their argument names, and what
 the question needs. `search_arxiv` is the only tool that finds papers, so the
 model calls it whatever the description says. Wikipedia is optional and the
-baseline already uses it rarely, so 2 of 10 against 0 of 10 is not a
-difference this sample can support.
+baseline already uses it rarely, so 2 of 10 against 0 of 10 is too
+small a sample to show a difference.
 
 Consequences. The spec's claim that a misleading description usually breaks
-the tool does not hold for this model. `docs/SPEC.md` is a protected path, so
-the wording there needs Nick's edit. Results come from one routing setting,
-and a smaller or different model may react to descriptions more. The
-guided notebook should not be described as a place where a bad description
-visibly fails.
+the tool does not hold for this model. The exercise 3 wording in
+`docs/SPEC.md` was changed to match. Results come from one routing setting,
+and a smaller or different model may react to descriptions more. The guided
+notebook should not promise that a bad description visibly fails.

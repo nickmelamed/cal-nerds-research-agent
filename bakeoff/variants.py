@@ -5,9 +5,9 @@ from core import schemas
 BASELINE = "baseline"
 DEFAULT_PROMPT = "default"
 
-# Names no tool, so the model has only the descriptions to go on.
 PROMPTS = {
     DEFAULT_PROMPT: None,
+    # Names no tool, so only the descriptions guide tool choice.
     "minimal": (
         "You are a research paper assistant. Answer in a short paragraph and "
         "cite each paper by its arXiv id. Only cite papers your tools returned."

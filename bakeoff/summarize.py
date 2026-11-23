@@ -113,7 +113,7 @@ def _line(label: str, s: dict) -> str:
 
 
 def variant_report(rows: list[dict]) -> str:
-    """Return how each tool description set changed tool use and citations."""
+    """Return tool use and citation rates for each description set."""
     groups = defaultdict(list)
     for row in rows:
         groups[row.get("variant") or "baseline"].append(row)
