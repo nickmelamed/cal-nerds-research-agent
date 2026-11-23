@@ -97,7 +97,7 @@ def test_append_row_writes_header_once(tmp_path):
 def test_run_all_loops_providers_questions_and_runs(tmp_path, monkeypatch):
     calls = []
 
-    def fake_run_one(client, provider, key, number, variant):
+    def fake_run_one(client, provider, key, number, variant, prompt):
         calls.append((client, provider, key, number))
         return dict.fromkeys(run.FIELDS, "")
 
@@ -326,7 +326,7 @@ def test_report_shows_mean_cost_per_run_when_present():
 def test_run_all_loops_over_variants(tmp_path, monkeypatch):
     seen = []
 
-    def fake_run_one(client, provider, key, number, variant):
+    def fake_run_one(client, provider, key, number, variant, prompt):
         seen.append((variant, number))
         return dict.fromkeys(run.FIELDS, "")
 
@@ -385,3 +385,17 @@ def test_guided_example_questions_are_in_the_bakeoff():
     for question in QUESTIONS:
         if question.key.startswith("guided_"):
             assert question.text in text
+
+
+def test_minimal_prompt_names_no_tool_and_is_recorded(fake_tools):
+    seen = {}
+
+    class Spy(FakeClient):
+        def create(self, **kwargs):
+            seen.update(kwargs)
+            return super().create(**kwargs)
+
+    row = run.run_one(Spy([usage_reply("Done.")]), "groq-free", "demo", 1, "baseline", "minimal")
+    system = seen["messages"][0]["content"]
+    assert not any(name in system for name in agent.TOOL_FUNCTIONS)
+    assert row["prompt"] == "minimal"

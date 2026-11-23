@@ -3,6 +3,16 @@
 from core import schemas
 
 BASELINE = "baseline"
+DEFAULT_PROMPT = "default"
+
+# Names no tool, so the model has only the descriptions to go on.
+PROMPTS = {
+    DEFAULT_PROMPT: None,
+    "minimal": (
+        "You are a research paper assistant. Answer in a short paragraph and "
+        "cite each paper by its arXiv id. Only cite papers your tools returned."
+    ),
+}
 
 # Each value is (search_arxiv, get_abstract, lookup_wikipedia).
 VARIANTS = {

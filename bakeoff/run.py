@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 from bakeoff.questions import BY_KEY, QUESTIONS, SYSTEM_PROMPT
-from bakeoff.variants import BASELINE, VARIANTS, tools_for
+from bakeoff.variants import BASELINE, DEFAULT_PROMPT, PROMPTS, VARIANTS, tools_for
 from core import client as model_client
 from core.agent import MAX_STEPS, MODEL, run_agent
 from core.citations import check_citations
@@ -29,6 +29,7 @@ FIELDS = [
     "model",
     "question",
     "variant",
+    "prompt",
     "run",
     "steps",
     "tools_used",
@@ -112,21 +113,36 @@ def _body(provider: str) -> dict | None:
     return body
 
 
-def run_one(client, provider: str, question_key: str, run: int, variant: str = BASELINE) -> dict:
+def run_one(
+    client,
+    provider: str,
+    question_key: str,
+    run: int,
+    variant: str = BASELINE,
+    prompt: str = DEFAULT_PROMPT,
+) -> dict:
     """Run the agent once and return a CSV row. Exceptions are recorded in it.
 
-    ``variant`` names the tool description set from ``bakeoff.variants``.
+    ``variant`` names the tool description set and ``prompt`` the system prompt,
+    both from ``bakeoff.variants``.
     """
     question = BY_KEY[question_key]
     tracer = Tracer(verbose=False)
     row = dict.fromkeys(FIELDS, "")
-    row.update(provider=provider, model=MODEL, question=question_key, variant=variant, run=run)
+    row.update(
+        provider=provider,
+        model=MODEL,
+        question=question_key,
+        variant=variant,
+        prompt=prompt,
+        run=run,
+    )
     start = time.monotonic()
     try:
         result = run_agent(
             client,
             question.text,
-            SYSTEM_PROMPT,
+            PROMPTS[prompt] or SYSTEM_PROMPT,
             tools_for(variant),
             MAX_STEPS,
             tracer,
@@ -196,14 +212,16 @@ def client_for(provider: str):
     return model_client.make_client("groq" if provider == GROQ_BASELINE else "openrouter")
 
 
-def run_all(clients, providers, questions, runs, out: Path, variants=(BASELINE,)) -> int:
+def run_all(
+    clients, providers, questions, runs, out: Path, variants=(BASELINE,), prompt=DEFAULT_PROMPT
+) -> int:
     """Append each row as it finishes so a crash keeps earlier runs."""
     count = 0
     for provider in providers:
         for key in questions:
             for variant in variants:
                 for run in range(1, runs + 1):
-                    append_row(out, run_one(clients[provider], provider, key, run, variant))
+                    append_row(out, run_one(clients[provider], provider, key, run, variant, prompt))
                     count += 1
     return count
 
@@ -223,6 +241,12 @@ def parse_args(argv=None) -> argparse.Namespace:
         default=[BASELINE],
         choices=sorted(VARIANTS),
         help="tool description sets, see bakeoff/variants.py",
+    )
+    parser.add_argument(
+        "--prompt",
+        default=DEFAULT_PROMPT,
+        choices=sorted(PROMPTS),
+        help="system prompt, see bakeoff/variants.py",
     )
     parser.add_argument(
         "--runs", type=int, default=DEFAULT_RUNS, help="runs per provider and question"
@@ -245,7 +269,7 @@ def main(argv=None) -> None:
     if not args.yes and input("Start? [y/N] ").strip().lower() != "y":
         raise SystemExit("Cancelled.")
     clients = {name: client_for(name) for name in args.providers}
-    count = run_all(clients, args.providers, args.questions, runs, out, args.variant)
+    count = run_all(clients, args.providers, args.questions, runs, out, args.variant, args.prompt)
     print(f"Done. {count} rows in {out}")
 
 
