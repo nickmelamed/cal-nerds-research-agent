@@ -177,3 +177,26 @@ search only and never read an abstract, so their answers lean on titles and
 the model's own knowledge. The citation check confirms a cited paper was
 retrieved, not that a claim about it is right. This is 10 runs per question
 on one routing setting, so the margins are wide.
+
+## D-010: Marker comments pull core code into notebooks (2026-11-23)
+
+Context. Notebooks must be self-contained, so `core/` code has to be copied
+into cells at build time.
+
+Decision. A source cell holding `# @core <module>` gets that module's code in
+its place, and `# @offline-data` gets the recorded responses from
+`fixtures/responses.json`. `build.py` removes `from core` imports and the
+`tools.` prefix, and fails if any reference to `core` is left. A cell that
+starts with `# @title` becomes a collapsed Colab form cell. `--check` compares
+cell types, sources, and metadata and ignores outputs.
+
+`OFFLINE` is set in its own cell after the tools cell, because the tools cell
+sets a default. Ruff skips `notebooks/` and `notebooks_src/`. The notebooks
+are generated from `core/`, which ruff already checks, and the sources use
+names that exist only after the build.
+
+Consequences. `OFFLINE = True` replaces only the arXiv and Wikipedia calls.
+The model still needs a key and a network. Saved responses cover only the
+recorded queries, so most questions get a "could not be reached" message.
+`MODEL` lives in `core/client.py` so the smoke test can use it before the
+agent cell runs.

@@ -6,10 +6,9 @@ import time
 from dataclasses import dataclass
 
 from core import tools
-from core.client import chat
+from core.client import MODEL, chat
 from core.tracer import Tracer
 
-MODEL = "openai/gpt-oss-120b"
 MAX_STEPS = 6
 RESULT_CHARS = 2000
 TRUNCATION_MARK = " [truncated]"
