@@ -209,7 +209,10 @@ returns messages on failure, and `core/tracer.py` records tokens.
 
 Decision. `notebooks_src/fullcode.py` writes its own short `search_arxiv`
 and `run_agent`. The loop appends each tool result to a plain list, and the
-shared citation check reads that list, so the starter needs no `Tracer`. The
+shared citation check reads that list, so the starter needs no `Tracer`. Its `run_tool` answers an unknown tool
+name and invalid JSON with the same messages as `core/agent.py`, so one slip
+by the model does not end a Run all. Tool exceptions, bad arguments, and
+network failures are left for task 2. The
 citation check cell defines `_normalize_id` itself, because the core copy
 lives in `core/tools.py`. The test cells for tasks 2 and 3 patch
 `requests.get` and the client, so they need no network or key.
@@ -218,13 +221,8 @@ Why. Pulling in the core versions would hand students the answers. The
 starter keeps the 3 second arXiv delay because that rule applies to every
 code path.
 
-The starter's `run_tool` answers an unknown tool name and invalid JSON with
-the same messages as `core/agent.py`, so a first slip by the model does not
-end a Run all. Tool exceptions, bad arguments, and network failures are
-still task 2. Rule 8 and the spec say so.
-
 Consequences. `build.py --check` cannot see drift between the two loops, so
 `tests/test_fullcode.py` runs the same scripted conversations through both
 and fails if the answers, the tool results, or the messages sent to the
-model differ. It also fails if the starter's loop gains a step cap, a
+model differ. The same test fails if the starter's loop gains a step cap, a
 catch-all `except`, or token fields.

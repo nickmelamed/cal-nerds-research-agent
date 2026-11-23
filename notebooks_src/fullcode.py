@@ -152,7 +152,6 @@ tool_results = []
 
 # %%
 def run_tool(name, raw_args):
-    """Run one tool the model asked for, or return a message if it asked wrongly."""
     if name not in TOOL_FUNCTIONS:
         return f"There is no tool called {name}. Use one of: {', '.join(TOOL_FUNCTIONS)}."
     try:
@@ -331,27 +330,37 @@ def test_error_handling():
     def fake_timeout(*args, **kwargs):
         raise requests.Timeout("forced timeout")
 
-    for label, call in [
+    def broken_tool(**kwargs):
+        raise RuntimeError("the tool broke")
+
+    cases = [
         ("empty query", lambda: search_arxiv("")),
         ("forced timeout", lambda: search_arxiv("graph neural networks")),
-    ]:
-        if label == "forced timeout":
-            requests.get = fake_timeout
-        try:
-            outcome = call()
-            if not isinstance(outcome, (str, list)):
-                problems.append(f"{label}: expected a message or a list")
-        except Exception as error:
-            problems.append(f"{label}: raised {type(error).__name__}")
-        finally:
-            requests.get = original_get
+        ("bad arguments", lambda: run_tool("search_arxiv", '{"wrong_name": 1}')),
+        ("tool that raises", lambda: run_tool("broken_tool", "{}")),
+    ]
+
+    # Every request fails, so nothing here touches the internet.
+    requests.get = fake_timeout
+    TOOL_FUNCTIONS["broken_tool"] = broken_tool
+    try:
+        for label, call in cases:
+            try:
+                outcome = call()
+                if not isinstance(outcome, (str, list)):
+                    problems.append(f"{label}: expected a message or a list")
+            except Exception as error:
+                problems.append(f"{label}: raised {type(error).__name__}")
+    finally:
+        requests.get = original_get
+        del TOOL_FUNCTIONS["broken_tool"]
 
     if problems:
         print("Not yet:")
         for problem in problems:
             print(" -", problem)
     else:
-        print("Passed: search_arxiv returns a message instead of raising.")
+        print("Passed: the tools return messages instead of raising.")
 
 
 test_error_handling()
@@ -470,6 +479,11 @@ test_step_cap()
 
 # %%
 # Your turn: add logging to run_agent above, then run a question below.
+QUESTION = (
+    "Find a few papers on machine learning for weather forecasting and "
+    "explain in plain language what one of them does."
+)
+
 answer = run_agent(QUESTION)
 print()
 print(answer)

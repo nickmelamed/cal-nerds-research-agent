@@ -9,7 +9,7 @@ from core import agent as core_agent
 from tests.test_build import code_cells
 
 SRC = build.SRC_DIR / "fullcode.py"
-# Rule 8: these belong to the student tasks, so the starter must not have them.
+# Student tasks. The starter must not contain them.
 FORBIDDEN = {
     "search_arxiv": ["try:", "except", "timeout", "raise_for_status"],
     "run_agent": ["max_steps", "tool_choice", "extra_body", "try:", "except", "usage", "monotonic"],
@@ -66,13 +66,12 @@ def test_search_keeps_the_arxiv_delay(starter):
     assert "time.sleep" in source
 
 
-def test_no_forbidden_names_in_citation_form_cell_inputs(starter):
+def test_citation_cell_defines_normalize_id(starter):
     cell = cell_with(starter, "def check_citations(")
     assert "def _normalize_id" in cell
 
 
-# The test cells run the student's code, so check them against a reference
-# solution and against the untouched starter.
+# Check the test cells against a reference solution and the untouched starter.
 
 
 def reply(content=None, calls=None):
@@ -95,7 +94,7 @@ class ScriptedClient:
 
 
 def load_namespace(starter):
-    """Run the cells that define tools and the loop, leaving out the network ones."""
+    # Skip the cells that need a network or a key.
 
     def fake_chat(client, **kwargs):
         return client.create(**kwargs).parse()
@@ -137,11 +136,20 @@ def run_test_cell(starter, ns, name, capsys):
     return capsys.readouterr().out
 
 
-def test_task_cells_report_not_yet_on_the_starter(starter, capsys):
+@pytest.mark.parametrize("name", ["test_step_cap", "test_error_handling"])
+def test_task_cells_report_not_yet_on_the_starter(starter, capsys, monkeypatch, name):
+    import requests
+
+    def no_network(*args, **kwargs):
+        raise AssertionError("the test cell reached the network")
+
+    monkeypatch.setattr(requests, "get", no_network)
+    monkeypatch.setattr("time.sleep", lambda seconds: None)
     ns = load_namespace(starter)
-    ns["requests"] = __import__("requests")
-    out = run_test_cell(starter, ns, "test_step_cap", capsys)
-    assert out.startswith("Not yet")
+    ns["requests"] = requests
+    out = run_test_cell(starter, ns, name, capsys)
+    assert out.startswith("Not yet"), out
+    assert requests.get is no_network
 
 
 def test_step_cap_cell_passes_with_a_reference_solution(starter, capsys):
@@ -157,18 +165,20 @@ def _capped(ns, max_steps):
     return f"Stopped after {max_steps} steps."
 
 
-def test_error_cell_passes_with_a_reference_solution(starter, capsys):
+def test_error_cell_passes_with_a_reference_solution(starter, capsys, monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda seconds: None)
     import requests
 
     ns = load_namespace(starter)
     ns["requests"] = requests
     ns["search_arxiv"] = lambda query, max_results=3: "No papers found, try broader terms."
+    ns["run_tool"] = lambda name, raw_args: "That tool call failed."
     out = run_test_cell(starter, ns, "test_error_handling", capsys)
     assert out.startswith("Passed"), out
 
 
-# Drift check. The same scripted conversation goes through the core loop and
-# the starter loop. Features the starter lacks on purpose are not exercised.
+# Run one scripted conversation through both loops. Features the starter lacks
+# on purpose are skipped.
 
 
 def scripted(name, arguments, final="Done 2101.00001."):

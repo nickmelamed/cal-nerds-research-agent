@@ -33,7 +33,7 @@ Nothing in progress. Phase 6 is next.
 - [ ] Form cells render collapsed
 - [ ] Full-code starter runs with Run all in a fresh runtime, the hint
       `<details>` blocks render, and the task 2 and 3 test cells print
-      "Not yet" on the untouched starter
+      "Not yet" on the untouched starter, with Wi-Fi off for task 2
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
 - [ ] A handful of simultaneous sessions on the workshop key, watching the
