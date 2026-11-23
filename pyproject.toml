@@ -17,7 +17,12 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-extend-exclude = ["scripts/agent", "cal-nerds-claude-code-handoff.md"]
+extend-exclude = [
+    "scripts/agent",
+    "cal-nerds-claude-code-handoff.md",
+    "notebooks",
+    "notebooks_src",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
