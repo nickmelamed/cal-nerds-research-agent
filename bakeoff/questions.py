@@ -19,7 +19,7 @@ class Question:
     needs_multiple_tools: bool
 
 
-# guided_* are placeholders until phase 6.
+# The guided_* questions are the examples in exercise 2 of the guided notebook.
 QUESTIONS = [
     Question(
         "demo",

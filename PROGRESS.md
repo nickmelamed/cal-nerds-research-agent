@@ -5,11 +5,11 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-Nothing in progress. Phase 6 is next.
+Phase 6 is built and reviewed. The exercise 3 results are in D-012 and the
+spec wording was updated to match. Next is the pull request.
 
 ## Next
 
-- [ ] Phase 6. Guided notebook and exercise 3 wording tests
 - [ ] Phase 7. README with Open in Colab links
 
 ## Colab checklist (Nick, by hand)
@@ -34,6 +34,9 @@ Nothing in progress. Phase 6 is next.
 - [ ] Full-code starter runs with Run all in a fresh runtime, the hint
       `<details>` blocks render, and the task 2 and 3 test cells print
       "Not yet" on the untouched starter, with Wi-Fi off for task 2
+- [x] Guided notebook runs with Run all in a fresh runtime, form cells render
+      collapsed, and `compare` finishes well inside the exercise 1 time
+- [x] Guided notebook with `OFFLINE = True` on the three exercise 2 questions
 - [ ] Open in Colab links open the right notebooks
 - [ ] Guided and full-code tracks each fit the 45 minute build block
 - [ ] A handful of simultaneous sessions on the workshop key, watching the
@@ -61,6 +64,8 @@ Nothing in progress. Phase 6 is next.
 - [x] Phase 4. `build.py`, the demo notebook, and OFFLINE mode, see D-010
       (PR #7)
 - [x] Phase 5. Full-code starter notebook and its tests, see D-011
+- [x] Phase 6. Guided notebook, exercise 3 wording tests in
+      `results/bakeoff-ex3*.csv`, see D-012
 
 ## Phase 4 notes from the bake-off
 
@@ -80,16 +85,6 @@ Nothing in progress. Phase 6 is next.
 - The full-code starter keeps its own bare loop. It must not get the forced
   last step, the empty-reply retry, or the `extra_body` argument, since the
   step cap and error handling are student tasks.
-
-## Phase 6 notes from the bake-off
-
-- Exercise 2 lets students pick a question. A question that asks for
-  "recent" papers sent the agent into repeated searches with years in the
-  query, because arXiv search cannot filter by date. Warn students or word
-  the example questions without "recent".
-- Questions that name a famous system whose paper is not on arXiv have the
-  same effect.
-- The guided questions in `bakeoff/questions.py` are placeholders.
 
 ## Phase 3 handoff notes
 

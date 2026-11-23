@@ -120,3 +120,18 @@ def test_each_tool_gets_its_own_cell(demo):
 def test_unknown_tool_part_fails():
     with pytest.raises(build.BuildError):
         build.core_source("tools", "no_such_tool")
+
+
+def test_build_tools_part_has_the_function_without_the_constants():
+    part = build.core_source("schemas", "build_tools")
+    assert part.startswith("def build_tools(")
+    assert "SEARCH_ARXIV_DESCRIPTION" not in part
+    assert "TOOLS =" not in part
+
+
+def test_build_tools_uses_the_given_descriptions():
+    from core.schemas import TOOLS, build_tools
+
+    tools = build_tools("one", "two", "three")
+    assert [t["function"]["description"] for t in tools] == ["one", "two", "three"]
+    assert [t["function"]["name"] for t in tools] == [t["function"]["name"] for t in TOOLS]
