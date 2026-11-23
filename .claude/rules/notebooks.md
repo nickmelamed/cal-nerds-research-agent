@@ -19,6 +19,8 @@ paths:
 - `fullcode.py` keeps its own minimal loop and `search_arxiv` on purpose.
   Do not pull in `core/` versions that would hand students the answers.
 - Every notebook starts with the shared setup cell and must run with Run all
-  in a fresh runtime, including with `OFFLINE = True` and no network.
+  in a fresh runtime. With `OFFLINE = True` the arXiv and Wikipedia calls use
+  saved responses, but the model call still needs a key and a connection to
+  OpenRouter or Groq.
 - After any change, run `make build` and confirm `python build.py --check`
   is clean.
