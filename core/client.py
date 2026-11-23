@@ -6,6 +6,7 @@ from getpass import getpass
 
 import requests
 
+MODEL = "openai/gpt-oss-120b"
 MAX_429_RETRIES = 5
 DEFAULT_WAIT_S = 2
 MAX_WAIT_S = 30
@@ -127,3 +128,15 @@ def openrouter_credit(key: str | None = None) -> float | None:
     except Exception:
         return None
     return float(remaining) if remaining is not None else None
+
+
+def smoke_test(client, model: str = MODEL) -> bool:
+    """Send one tiny request and print whether the key and model work."""
+    try:
+        chat(client, model=model, messages=[{"role": "user", "content": "Say ready."}])
+    except Exception as error:
+        print(f"Smoke test failed with {active_provider()} ({type(error).__name__}).")
+        print("Check that your key is right and has credit, then run this cell again.")
+        return False
+    print(f"Smoke test passed. Using {active_provider()} with model {model}.")
+    return True

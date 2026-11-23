@@ -163,3 +163,15 @@ def test_openrouter_credit_is_none_without_limit_or_on_failure(monkeypatch):
     assert client.openrouter_credit("k") is None
     monkeypatch.setattr(client.requests, "get", lambda *a, **k: FakeReply({}, ok=False))
     assert client.openrouter_credit("k") is None
+
+
+def test_smoke_test_passes_and_names_provider(sleeps, monkeypatch, capsys):
+    monkeypatch.setitem(client._active, "provider", "groq")
+    assert client.smoke_test(FakeClient([Raw()])) is True
+    assert "passed. Using groq with model " + client.MODEL in capsys.readouterr().out
+
+
+def test_smoke_test_reports_failure(sleeps, monkeypatch, capsys):
+    monkeypatch.setitem(client._active, "provider", "openrouter")
+    assert client.smoke_test(FakeClient([Err(401)])) is False
+    assert "failed with openrouter" in capsys.readouterr().out
