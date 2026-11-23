@@ -145,7 +145,24 @@ SYSTEM_PROMPT = (
 
 tool_results = []
 
+# %% [markdown]
+# `run_tool` runs one tool the model asked for. If the model asks for a tool
+# that does not exist or sends text that is not valid JSON, it returns a
+# message instead of stopping, so the model can fix its own mistake.
 
+# %%
+def run_tool(name, raw_args):
+    """Run one tool the model asked for, or return a message if it asked wrongly."""
+    if name not in TOOL_FUNCTIONS:
+        return f"There is no tool called {name}. Use one of: {', '.join(TOOL_FUNCTIONS)}."
+    try:
+        args = json.loads(raw_args or "{}")
+    except ValueError:
+        return "The tool arguments were not valid JSON. Try the call again."
+    return TOOL_FUNCTIONS[name](**args)
+
+
+# %%
 def run_agent(question):
     tool_results.clear()
     messages = [
@@ -178,17 +195,12 @@ def run_agent(question):
         )
         for call in message.tool_calls:
             name = call.function.name
-            args = json.loads(call.function.arguments)
-            result = TOOL_FUNCTIONS[name](**args)
-            print(f"Tool call: {name}({args})")
-            tool_results.append({"name": name, "args": args, "result": result})
-            messages.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": call.id,
-                    "content": json.dumps(result),
-                }
-            )
+            result = run_tool(name, call.function.arguments)
+            print(f"Tool call: {name}({call.function.arguments})")
+            tool_results.append({"name": name, "args": call.function.arguments, "result": result})
+            if not isinstance(result, str):
+                result = json.dumps(result)
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
 
 
 # %% [markdown]
@@ -277,15 +289,17 @@ print(answer)
 # %% [markdown]
 # ## Task 2. Handle errors
 #
-# Right now, anything that goes wrong stops the whole run with a red error.
-# Make the agent keep going instead. Handle these three cases:
+# The loop already answers the model when it asks for a tool that does not
+# exist or sends text that is not valid JSON. Anything else that goes wrong
+# still stops the whole run with a red error. Make the agent keep going
+# instead. Handle these three cases:
 #
 # - A search that finds nothing. Return a message the model can act on, such
 #   as "No papers found, try broader terms".
 # - A network failure or a slow reply. Give `requests.get` a `timeout`, and
 #   catch the error it raises.
-# - Bad arguments from the model, such as text that is not valid JSON or a
-#   tool name that does not exist. Send a message back as the tool result.
+# - A tool that raises an error, or arguments that do not fit the function,
+#   such as a missing `query`. Send a message back as the tool result.
 #
 # The pattern is the same each time. Catch the problem and return a short
 # message that tells the model what happened, so it can try something else.
@@ -297,8 +311,8 @@ print(answer)
 # <summary>Hint</summary>
 #
 # Wrap the risky lines in `try:` and `except SomeError:`. In the search
-# function that is the `requests.get` call and the XML parsing. In the loop it
-# is `json.loads` and the tool call. `requests.RequestException` covers
+# function that is the `requests.get` call and the XML parsing. In `run_tool`
+# it is the line that calls the tool. `requests.RequestException` covers
 # timeouts and other network errors. Check `if not papers:` before returning.
 #
 # </details>

@@ -1,9 +1,11 @@
+import json
 import re
 from types import SimpleNamespace
 
 import pytest
 
 import build
+from core import agent as core_agent
 from tests.test_build import code_cells
 
 SRC = build.SRC_DIR / "fullcode.py"
@@ -11,6 +13,7 @@ SRC = build.SRC_DIR / "fullcode.py"
 FORBIDDEN = {
     "search_arxiv": ["try:", "except", "timeout", "raise_for_status"],
     "run_agent": ["max_steps", "tool_choice", "extra_body", "try:", "except", "usage", "monotonic"],
+    "run_tool": ["except Exception", "except:", "except TypeError", "max_steps", "usage"],
 }
 
 
@@ -102,6 +105,8 @@ def load_namespace(starter):
         "def search_arxiv(",
         "SEARCH_ARXIV_SCHEMA =",
         "def run_agent(",
+        "def run_tool(",
+        "tool_results = []",
         "class AlwaysSearches",
         "def check_citations",
     )
@@ -160,3 +165,52 @@ def test_error_cell_passes_with_a_reference_solution(starter, capsys):
     ns["search_arxiv"] = lambda query, max_results=3: "No papers found, try broader terms."
     out = run_test_cell(starter, ns, "test_error_handling", capsys)
     assert out.startswith("Passed"), out
+
+
+# Drift check. The same scripted conversation goes through the core loop and
+# the starter loop. Features the starter lacks on purpose are not exercised.
+
+
+def scripted(name, arguments, final="Done 2101.00001."):
+    call = SimpleNamespace(id="c1", function=SimpleNamespace(name=name, arguments=arguments))
+    return [("", [call]), (final, None)]
+
+
+class RecordingClient(ScriptedClient):
+    def __init__(self, replies):
+        super().__init__(replies)
+        self.sent = []
+
+    def create(self, **kwargs):
+        self.sent.append(json.loads(json.dumps(kwargs["messages"])))
+        return super().create(**kwargs)
+
+
+@pytest.mark.parametrize(
+    "name,arguments",
+    [
+        ("search_arxiv", '{"query": "graphs"}'),
+        ("search_arxiv", "not json"),
+        ("search_arxiv", ""),
+        ("no_such_tool", "{}"),
+    ],
+)
+def test_starter_loop_matches_core_loop(starter, monkeypatch, name, arguments):
+    papers = [{"id": "2101.00001", "title": "A paper"}]
+    # The starter has one tool, so give the core loop the same one.
+    monkeypatch.setattr(core_agent, "TOOL_FUNCTIONS", {"search_arxiv": lambda **kw: papers})
+    core_client = RecordingClient(scripted(name, arguments))
+    core_result = core_agent.run_agent(core_client, "q", "prompt", [])
+
+    ns = load_namespace(starter)
+    ns["SYSTEM_PROMPT"] = "prompt"
+    ns["TOOLS"] = []
+    ns["TOOL_FUNCTIONS"]["search_arxiv"] = lambda **kw: papers
+    ns["client"] = RecordingClient(scripted(name, arguments))
+    answer = ns["run_agent"]("q")
+
+    assert answer == core_result.answer
+    assert ns["client"].sent == core_client.sent
+    assert [r["result"] for r in ns["tool_results"]] == [
+        r["result"] for r in core_result.tracer.tool_results
+    ]

@@ -218,8 +218,13 @@ Why. Pulling in the core versions would hand students the answers. The
 starter keeps the 3 second arXiv delay because that rule applies to every
 code path.
 
-Consequences. A change to the core loop does not reach the starter, and
-`build.py --check` does not notice. `tests/test_fullcode.py` fails if the
-starter's loop gains a step cap, a try block, or token fields. The first
-task cell can still end a Run all early if a model calls a tool the student
-has not written yet, since the bare loop has no error handling.
+The starter's `run_tool` answers an unknown tool name and invalid JSON with
+the same messages as `core/agent.py`, so a first slip by the model does not
+end a Run all. Tool exceptions, bad arguments, and network failures are
+still task 2. Rule 8 and the spec say so.
+
+Consequences. `build.py --check` cannot see drift between the two loops, so
+`tests/test_fullcode.py` runs the same scripted conversations through both
+and fails if the answers, the tool results, or the messages sent to the
+model differ. It also fails if the starter's loop gains a step cap, a
+catch-all `except`, or token fields.
