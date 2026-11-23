@@ -9,10 +9,6 @@ phase. CLAUDE.md stays stable and does not track status.
       (tokens and citations), `results/bakeoff-groq-baseline.csv` (free Groq key),
       `results/bakeoff-cost-sample.csv` (cost, now in docs/SPEC.md).
 
-- [ ] Phase 4. `build.py`, `notebooks_src/demo.py`, and `notebooks/demo.ipynb`
-      are written. Left: Nick saves a copy of the demo with outputs from a good
-      live run, and the pull request.
-
 ## Next
 
 - [ ] Phase 5. Full-code starter
@@ -45,6 +41,7 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Workshop logistics (Nick)
 
+- [ ] Save a copy of the demo notebook with outputs from a good live run
 - [ ] Dedicated OpenRouter workshop key with a credit limit
 - [ ] Links in slides, pre-workshop email (own key optional), and wrap-up
       slide (how to get a free key)
@@ -58,6 +55,8 @@ phase. CLAUDE.md stays stable and does not track status.
       (PR #1). Now covers both OpenRouter and Groq, see D-008
 - [x] Phase 2. Tool schemas, agent loop, tracer, and citation check, with
       mocked-Groq tests (PR #3)
+- [x] Phase 4. `build.py`, the demo notebook, and OFFLINE mode, see D-010
+      (PR #7)
 
 ## Phase 4 notes from the bake-off
 
