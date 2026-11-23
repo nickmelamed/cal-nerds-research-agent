@@ -1,5 +1,5 @@
 # %% [markdown]
-# # Research paper assistant: build it yourself
+# # Research Paper Assistant (Build it Yourself)
 #
 # This notebook starts with a small agent that already works. It has one
 # tool, `search_arxiv`, and a loop that asks the model, runs the tool it
@@ -36,7 +36,7 @@ client = make_client()
 assert smoke_test(client), "Fix the key problem above, then run this cell again."
 
 # %% [markdown]
-# ## 2. The tool
+# ## 2. The Tool
 #
 # `search_arxiv` sends a search to arXiv and turns the reply into a short
 # list of papers. arXiv asks for at most one request every 3 seconds, so the
@@ -92,7 +92,7 @@ def search_arxiv(query, max_results=3):
 search_arxiv("graph neural networks for molecules", 2)
 
 # %% [markdown]
-# ## 3. Tell the model what the tool does
+# ## 3. Tell the Model What the Tool Does
 #
 # The model never sees the Python above. It sees only this description, and
 # it decides whether to call the tool from the words in it.
@@ -126,7 +126,7 @@ TOOLS = [SEARCH_ARXIV_SCHEMA]
 TOOL_FUNCTIONS = {"search_arxiv": search_arxiv}
 
 # %% [markdown]
-# ## 4. The agent loop
+# ## 4. The Agent Loop
 #
 # Each time around the loop we ask the model. If it asks for a tool, we run
 # the tool, add the result to the conversation, and ask again. When it
@@ -204,7 +204,7 @@ def run_agent(question):
 
 
 # %% [markdown]
-# ## 5. Ask a question and check the citations
+# ## 5. Ask a Question and Check the Citations
 #
 # Models sometimes invent papers. The check below looks at every arXiv id in
 # the answer and counts it only if a tool returned it in this run. It checks
@@ -244,9 +244,10 @@ if report.unverified:
     print("Not retrieved by any tool:", report.unverified)
 
 # %% [markdown]
-# ## Task 1. Write a new tool
+# ## Task 1: Write a New Tool
 #
-# Give the agent a second tool. Pick one.
+# Give the agent a second tool. Pick one from the options below (or both if
+# you're feeling adventurous!):
 #
 # - `save_to_reading_list(paper_id, note)` stores a paper and a short note in
 #   a list, and returns a message saying it was saved.
@@ -264,7 +265,7 @@ if report.unverified:
 
 # %% [markdown]
 # <details>
-# <summary>Hint</summary>
+# <summary>Hint!</summary>
 #
 # Write the function first and call it by hand to see it works. Then copy
 # `SEARCH_ARXIV_SCHEMA`, change the name, the description, and the
@@ -287,7 +288,7 @@ print()
 print(answer)
 
 # %% [markdown]
-# ## Task 2. Handle errors
+# ## Task 2: Handle Errors
 #
 # The loop already answers the model when it asks for a tool that does not
 # exist or sends text that is not valid JSON. Anything else that goes wrong
@@ -308,7 +309,7 @@ print(answer)
 
 # %% [markdown]
 # <details>
-# <summary>Hint</summary>
+# <summary>Hint!</summary>
 #
 # Wrap the risky lines in `try:` and `except SomeError:`. In the search
 # function that is the `requests.get` call and the XML parsing. In `run_tool`
@@ -356,7 +357,7 @@ def test_error_handling():
 test_error_handling()
 
 # %% [markdown]
-# ## Task 3. Cap the loop
+# ## Task 3: Cap the Loop
 #
 # `while True` never stops if the model keeps asking for tools. Add a
 # `max_steps` argument to `run_agent`, so `run_agent(question, max_steps=6)`
@@ -368,7 +369,7 @@ test_error_handling()
 
 # %% [markdown]
 # <details>
-# <summary>Hint</summary>
+# <summary>Hint!</summary>
 #
 # Replace `while True:` with `for step in range(max_steps):`. If the loop
 # ends without returning, the cap was reached, so return your message after
@@ -436,10 +437,12 @@ def test_step_cap():
 test_step_cap()
 
 # %% [markdown]
-# ## Task 4. Log tokens and time
+# ## Task 4: Log Tokens and Time
 #
-# Every model call costs tokens and takes time. Record both for each call,
-# then print a summary at the end of a run. A table like this is enough:
+# Every model call costs tokens and takes time.
+#
+# Record both for each call, then print a summary at the end of a run. A
+# table like this is enough:
 #
 # ```
 # step  tokens  seconds
@@ -455,7 +458,7 @@ test_step_cap()
 
 # %% [markdown]
 # <details>
-# <summary>Hint</summary>
+# <summary>Hint!</summary>
 #
 # Make an empty list called `call_log` at the top of `run_agent`. After each
 # `chat(...)` call, append a dictionary with the step number, the tokens,
@@ -472,9 +475,9 @@ print()
 print(answer)
 
 # %% [markdown]
-# ## Stretch
+# ## Go Further
 #
-# If you finish early, pick one.
+# If you finish early, you can also try these implementations:
 #
 # - Add `get_abstract` and `lookup_wikipedia` as new tools, written from
 #   scratch. The demo notebook has working versions to compare against once
