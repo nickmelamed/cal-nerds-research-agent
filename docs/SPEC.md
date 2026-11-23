@@ -40,11 +40,11 @@ Keep each run near 6 to 8k tokens. The reasons are cost, latency, and the 8K TPM
 
 ### Cost
 
-TBD until the bake-off. Confirm gpt-oss-120b pricing on OpenRouter for the pinned provider. The estimate stays in the low single-digit dollars until real numbers exist.
+Measured at about $0.0015 per agent run on OpenRouter with default routing (20 runs, range $0.0006 to $0.0029), from `results/bakeoff-cost-sample.csv`. Sixty students at about 30 runs each come to roughly $3, and about $5 if every run cost as much as the most expensive one measured. Set the key's credit limit with margin above that. Price depends on which upstream provider serves a call, and each bake-off row records it in `served_by`.
 
 ### Key safety
 
-- Create a dedicated OpenRouter key with a credit limit
+- Create a dedicated OpenRouter key with a credit limit, such as $10 to $15
 - Revoke the key right after the workshop, since it will end up in shared copies of notebooks
 
 ### Student messaging

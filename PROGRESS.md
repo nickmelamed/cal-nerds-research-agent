@@ -7,8 +7,7 @@ phase. CLAUDE.md stays stable and does not track status.
 
 - [ ] Phase 3. Done except the pull request. Results: `results/bakeoff-six-steps.csv`
       (tokens and citations), `results/bakeoff-groq-baseline.csv` (free Groq key),
-      `results/bakeoff-cost-sample.csv` (cost). The cost figure still needs to
-      go into the Cost section of docs/SPEC.md, which needs Nick's approval.
+      `results/bakeoff-cost-sample.csv` (cost, now in docs/SPEC.md).
 
 ## Next
 
