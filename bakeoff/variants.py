@@ -31,6 +31,21 @@ VARIANTS = {
         schemas.GET_ABSTRACT_DESCRIPTION,
         schemas.LOOKUP_WIKIPEDIA_DESCRIPTION,
     ),
+    "off_search": (
+        "This tool is out of service. Do not call it.",
+        schemas.GET_ABSTRACT_DESCRIPTION,
+        schemas.LOOKUP_WIKIPEDIA_DESCRIPTION,
+    ),
+    "vague_wikipedia": (
+        schemas.SEARCH_ARXIV_DESCRIPTION,
+        schemas.GET_ABSTRACT_DESCRIPTION,
+        "Gets information.",
+    ),
+    "off_wikipedia": (
+        schemas.SEARCH_ARXIV_DESCRIPTION,
+        schemas.GET_ABSTRACT_DESCRIPTION,
+        "This tool is out of service. Do not call it.",
+    ),
     "misleading_wikipedia": (
         schemas.SEARCH_ARXIV_DESCRIPTION,
         schemas.GET_ABSTRACT_DESCRIPTION,
