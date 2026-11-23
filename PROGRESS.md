@@ -6,11 +6,12 @@ phase. CLAUDE.md stays stable and does not track status.
 ## Now
 
 - [ ] Phase 3. OpenRouter bake-off for gpt-oss-120b. The loop, prompt, and
-      6 step cap are settled (D-009, `results/bakeoff-six-steps.csv`). Left:
-      choose a pinned provider and a fallback by name, since `openrouter:auto`
-      spreads calls over several upstream providers. Run the free Groq
-      baseline, which hit connection errors in the pilot. Confirm OpenRouter
-      pricing before cost numbers go in docs.
+      6 step cap are settled (D-009, `results/bakeoff-six-steps.csv`). The
+      free Groq baseline ran cleanly on two questions
+      (`results/bakeoff-groq-baseline.csv`). Left: a larger cost sample, since
+      `results/bakeoff-cost-check.csv` has only 2 runs. The provider needs no
+      pin, because each run records `served_by`. Decide whether to run the
+      Groq baseline on all four questions.
 
 ## Next
 
