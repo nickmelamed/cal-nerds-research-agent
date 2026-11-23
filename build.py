@@ -38,7 +38,10 @@ TOOLS_PREFIX = re.compile(r"\btools\.(\w+)")
 LEFTOVER = re.compile(r"^\s*(?:from|import) core\b|\btools\.[a-z_]+\(", re.MULTILINE)
 
 
-SPLIT_FUNCTIONS = {"tools": ("search_arxiv", "get_abstract", "lookup_wikipedia")}
+SPLIT_FUNCTIONS = {
+    "tools": ("search_arxiv", "get_abstract", "lookup_wikipedia"),
+    "schemas": ("build_tools",),
+}
 
 
 class BuildError(Exception):
