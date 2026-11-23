@@ -217,15 +217,16 @@ if report.unverified:
 # trace above to find out.
 
 # %% [markdown]
-# ## Exercise 3. Break a Tool Description (12 minutes)
+# ## Exercise 3. Change a Tool Description (12 minutes)
 #
-# **Your turn.** The model picks tools using only their descriptions. Change
-# one description so it is vague or misleading, run the agent, and watch what
-# happens. Here are two ideas.
+# **Your turn.** The model sees a short description of each tool. Does it
+# really follow them? Pick one description, change it, and write down what you
+# expect to happen before you run the agent. Here are three ideas.
 #
 # - Vague: `"Gets information."`
 # - Misleading: `"Looks up the meaning of a word in a dictionary."` for
 #   `search_arxiv`
+# - An order: `"This tool is out of service. Do not call it."`
 #
 # Edit the strings in the cell below, run it, then ask the same question as
 # before.
@@ -255,9 +256,14 @@ if report.unverified:
     print("Not retrieved by any tool:", report.unverified)
 
 # %% [markdown]
-# **What to notice.** Did the agent skip the tool you changed, or use it for
-# the wrong job? Did the citation check catch anything? Put the original
-# description back and run again to see the difference.
+# **What to notice.** Compare the trace with your prediction. In our tests
+# the agent often ignored a bad description. It still called `search_arxiv`
+# when that was described as a dictionary, and even when it was described as
+# out of service. The tool name, its argument names, and the system prompt
+# also tell the model what a tool does, and for a question about papers only
+# one tool can find them. Did your agent behave the same way? If it did, try
+# the stretch idea of removing the tool from the list, which does change what
+# the agent can do.
 
 # %% [markdown]
 # ## Exercise 4. Stretch (as time allows)

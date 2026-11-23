@@ -5,24 +5,13 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-Phase 6 is built and waiting on one live run. The guided notebook ships with
-the two exercise 3 wordings from the spec, untested. Nick runs the wording
-test, then the wordings are picked from the numbers and recorded as D-012.
-
-```bash
-.venv/bin/python -m bakeoff.run --providers openrouter:auto \
-  --questions guided_biology \
-  --variant baseline vague_search misleading_search misleading_wikipedia \
-  --runs 10 --out results/bakeoff-ex3.csv
-.venv/bin/python -m bakeoff.summarize results/bakeoff-ex3.csv
-```
-
-That is 40 runs, about 320k tokens at the 8k estimate.
+Phase 6 is built. The exercise 3 wording tests are done and recorded in
+D-012. No description wording reliably broke the agent, so exercise 3 asks
+students to predict and compare. Left for Nick: edit the exercise 3 row and
+the paragraph after it in docs/SPEC.md (protected), then review and merge.
 
 ## Next
 
-- [ ] Phase 6. Exercise 3 wording test run, pick wordings, D-012 (guided notebook
-      and `--variant` mode are done)
 - [ ] Phase 7. README with Open in Colab links
 
 ## Colab checklist (Nick, by hand)
@@ -77,6 +66,8 @@ That is 40 runs, about 320k tokens at the 8k estimate.
 - [x] Phase 4. `build.py`, the demo notebook, and OFFLINE mode, see D-010
       (PR #7)
 - [x] Phase 5. Full-code starter notebook and its tests, see D-011
+- [x] Phase 6. Guided notebook, exercise 3 wording tests in
+      `results/bakeoff-ex3*.csv`, see D-012
 
 ## Phase 4 notes from the bake-off
 
@@ -96,16 +87,6 @@ That is 40 runs, about 320k tokens at the 8k estimate.
 - The full-code starter keeps its own bare loop. It must not get the forced
   last step, the empty-reply retry, or the `extra_body` argument, since the
   step cap and error handling are student tasks.
-
-## Phase 6 notes from the bake-off
-
-- Exercise 2 lets students pick a question. A question that asks for
-  "recent" papers sent the agent into repeated searches with years in the
-  query, because arXiv search cannot filter by date. Warn students or word
-  the example questions without "recent".
-- Questions that name a famous system whose paper is not on arXiv have the
-  same effect.
-- The guided questions in `bakeoff/questions.py` are placeholders.
 
 ## Phase 3 handoff notes
 
