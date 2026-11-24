@@ -5,12 +5,13 @@ phase. CLAUDE.md stays stable and does not track status.
 
 ## Now
 
-Phase 6 is built and reviewed. The exercise 3 results are in D-012 and the
-spec wording was updated to match. Next is the pull request.
+Phase 7 is written on branch `phase-7-readme`. The README has the Open in
+Colab links and a section on reproducing the notebooks later. The links
+resolve only once this is on `main`, so they are still on the Colab checklist.
 
 ## Next
 
-- [ ] Phase 7. README with Open in Colab links
+- [ ] Colab dry runs and load check from the checklist below
 
 ## Colab checklist (Nick, by hand)
 
@@ -66,6 +67,8 @@ spec wording was updated to match. Next is the pull request.
 - [x] Phase 5. Full-code starter notebook and its tests, see D-011
 - [x] Phase 6. Guided notebook, exercise 3 wording tests in
       `results/bakeoff-ex3*.csv`, see D-012
+- [x] Phase 7. README with Open in Colab links and a section on reproducing
+      the notebooks after the workshop
 
 ## Phase 4 notes from the bake-off
 
